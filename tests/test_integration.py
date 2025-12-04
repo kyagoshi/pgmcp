@@ -6,6 +6,7 @@ docker compose up -d でデータベースを起動してから実行してく�
 """
 
 import os
+from collections.abc import Generator
 
 import pytest
 
@@ -20,12 +21,12 @@ from server import _get_table_schema_impl, _list_tables_impl, get_connection
 
 
 @pytest.fixture(scope="module")
-def db_connection():
+def db_connection() -> Generator[bool, None, None]:
     """データベース接続が可能かを確認するフィクスチャ"""
     try:
         conn = get_connection()
         conn.close()
-        return True
+        yield True
     except Exception as e:
         pytest.skip(f"データベースに接続できません: {e}")
 
@@ -33,7 +34,7 @@ def db_connection():
 class TestListTablesIntegration:
     """list_tables の統合テスト"""
 
-    def test_list_tables_public_schema(self, db_connection):
+    def test_list_tables_public_schema(self, db_connection: bool) -> None:
         """publicスキーマのテーブル一覧を取得"""
         result = _list_tables_impl(schema="public")
 
@@ -46,14 +47,14 @@ class TestListTablesIntegration:
         assert "| orders | BASE TABLE |" in result
         assert "| products | BASE TABLE |" in result
 
-    def test_list_tables_audit_schema(self, db_connection):
+    def test_list_tables_audit_schema(self, db_connection: bool) -> None:
         """auditスキーマのテーブル一覧を取得"""
         result = _list_tables_impl(schema="audit")
 
         assert "| table_name | table_type |" in result
         assert "| logs | BASE TABLE |" in result
 
-    def test_list_tables_nonexistent_schema(self, db_connection):
+    def test_list_tables_nonexistent_schema(self, db_connection: bool) -> None:
         """存在しないスキーマの場合"""
         result = _list_tables_impl(schema="nonexistent_schema")
 
@@ -63,7 +64,7 @@ class TestListTablesIntegration:
 class TestGetTableSchemaIntegration:
     """get_table_schema の統合テスト"""
 
-    def test_get_users_table_schema(self, db_connection):
+    def test_get_users_table_schema(self, db_connection: bool) -> None:
         """usersテーブルのスキーマを取得"""
         result = _get_table_schema_impl("users", schema="public")
 
@@ -77,7 +78,7 @@ class TestGetTableSchemaIntegration:
         assert "| email | character varying(255) | YES |" in result
         assert "| created_at | timestamp with time zone |" in result
 
-    def test_get_orders_table_schema(self, db_connection):
+    def test_get_orders_table_schema(self, db_connection: bool) -> None:
         """ordersテーブルのスキーマを取得（外部キーを含む）"""
         result = _get_table_schema_impl("orders", schema="public")
 
@@ -87,7 +88,7 @@ class TestGetTableSchemaIntegration:
         assert "| total_amount | numeric(10,2) | NO |" in result
         assert "| status | character varying(50) |" in result
 
-    def test_get_products_table_schema(self, db_connection):
+    def test_get_products_table_schema(self, db_connection: bool) -> None:
         """productsテーブルのスキーマを取得"""
         result = _get_table_schema_impl("products", schema="public")
 
@@ -97,7 +98,7 @@ class TestGetTableSchemaIntegration:
         assert "| price | numeric(10,2) | NO |" in result
         assert "| stock | integer |" in result
 
-    def test_get_audit_logs_table_schema(self, db_connection):
+    def test_get_audit_logs_table_schema(self, db_connection: bool) -> None:
         """audit.logsテーブルのスキーマを取得（別スキーマ）"""
         result = _get_table_schema_impl("logs", schema="audit")
 
@@ -107,7 +108,7 @@ class TestGetTableSchemaIntegration:
         assert "| old_data | jsonb |" in result
         assert "| new_data | jsonb |" in result
 
-    def test_get_nonexistent_table_schema(self, db_connection):
+    def test_get_nonexistent_table_schema(self, db_connection: bool) -> None:
         """存在しないテーブルの場合"""
         result = _get_table_schema_impl("nonexistent_table", schema="public")
 
@@ -117,7 +118,7 @@ class TestGetTableSchemaIntegration:
 class TestDatabaseConnection:
     """データベース接続のテスト"""
 
-    def test_connection_successful(self, db_connection):
+    def test_connection_successful(self, db_connection: bool) -> None:
         """データベースに正常に接続できることを確認"""
         conn = get_connection()
         assert conn is not None
@@ -131,7 +132,7 @@ class TestDatabaseConnection:
 
         conn.close()
 
-    def test_connection_returns_correct_database(self, db_connection):
+    def test_connection_returns_correct_database(self, db_connection: bool) -> None:
         """正しいデータベースに接続していることを確認"""
         conn = get_connection()
 

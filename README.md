@@ -144,6 +144,28 @@ uv run pytest tests/test_server.py -v
 uv run pytest tests/test_integration.py -v
 ```
 
+### コード品質チェック
+
+```bash
+# リンター（ruff）
+uv run ruff check .
+
+# 自動修正
+uv run ruff check --fix .
+
+# フォーマッター（ruff format）
+uv run ruff format .
+
+# フォーマットチェックのみ
+uv run ruff format --check .
+
+# 型チェック（mypy）
+uv run mypy server.py tests/
+
+# 全チェックを一括実行
+uv run ruff check . && uv run ruff format --check . && uv run mypy server.py tests/
+```
+
 ### ローカルでのサーバー実行
 
 ```bash
@@ -156,7 +178,3 @@ PGHOST=localhost PGPORT=5433 PGDATABASE=testdb PGUSER=testuser PGPASSWORD=testpa
 ```bash
 uv run fastmcp dev server.py
 ```
-
-## ライセンス
-
-MIT License

@@ -9,12 +9,13 @@ from typing import Any
 
 import psycopg2
 from fastmcp import FastMCP
+from psycopg2.extensions import connection
 
 # MCPサーバーインスタンスを作成
 mcp = FastMCP("pgmcp")
 
 
-def get_connection():
+def get_connection() -> connection:
     """環境変数からPostgreSQL接続を作成"""
     return psycopg2.connect(
         host=os.environ.get("PGHOST", "localhost"),
@@ -71,7 +72,7 @@ def _list_tables_impl(schema: str = "public") -> str:
         テーブル情報のMarkdown Table形式の文字列。
     """
     query = """
-        SELECT 
+        SELECT
             table_name,
             table_type
         FROM information_schema.tables
@@ -79,17 +80,14 @@ def _list_tables_impl(schema: str = "public") -> str:
         ORDER BY table_name
     """
 
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(query, (schema,))
-            rows = cur.fetchall()
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(query, (schema,))
+        rows = cur.fetchall()
 
     return _format_table_list(rows)
 
 
-def _get_table_schema_impl(
-    table_name: str, schema: str = "public"
-) -> str:
+def _get_table_schema_impl(table_name: str, schema: str = "public") -> str:
     """
     指定したテーブルのカラム情報を取得します（内部実装）。
 
@@ -101,15 +99,15 @@ def _get_table_schema_impl(
         カラム情報のMarkdown Table形式の文字列。
     """
     query = """
-        SELECT 
+        SELECT
             a.attname AS column_name,
             pg_catalog.format_type(a.atttypid, a.atttypmod) AS data_type,
             CASE WHEN a.attnotnull THEN 'NO' ELSE 'YES' END AS is_nullable,
             pg_catalog.pg_get_expr(d.adbin, d.adrelid) AS column_default,
             COALESCE(
-                (SELECT TRUE 
+                (SELECT TRUE
                  FROM pg_catalog.pg_constraint con
-                 WHERE con.conrelid = a.attrelid 
+                 WHERE con.conrelid = a.attrelid
                    AND a.attnum = ANY(con.conkey)
                    AND con.contype = 'p'),
                 FALSE
@@ -125,10 +123,9 @@ def _get_table_schema_impl(
         ORDER BY a.attnum
     """
 
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(query, (table_name, schema))
-            rows = cur.fetchall()
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(query, (table_name, schema))
+        rows = cur.fetchall()
 
     return _format_table_schema(rows)
 
@@ -163,7 +160,7 @@ def get_table_schema(table_name: str, schema: str = "public") -> str:
     return _get_table_schema_impl(table_name, schema)
 
 
-def main():
+def main() -> None:
     """MCPサーバーを起動"""
     mcp.run()
 

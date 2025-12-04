@@ -6,8 +6,6 @@ PostgreSQL MCPサーバーのユニットテスト
 
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from server import _get_table_schema_impl, _list_tables_impl
 
 
@@ -15,7 +13,9 @@ class TestListTables:
     """list_tables ツールのテスト"""
 
     @patch("server.get_connection")
-    def test_list_tables_returns_table_list(self, mock_get_connection: MagicMock):
+    def test_list_tables_returns_table_list(
+        self, mock_get_connection: MagicMock
+    ) -> None:
         """テーブル一覧が正しくMarkdown Table形式で返されることを確認"""
         # モックカーソルの設定
         mock_cursor = MagicMock()
@@ -44,7 +44,9 @@ class TestListTables:
         assert "| user_view | VIEW |" in result
 
     @patch("server.get_connection")
-    def test_list_tables_with_custom_schema(self, mock_get_connection: MagicMock):
+    def test_list_tables_with_custom_schema(
+        self, mock_get_connection: MagicMock
+    ) -> None:
         """カスタムスキーマを指定した場合のテスト"""
         mock_cursor = MagicMock()
         mock_cursor.fetchall.return_value = [("audit_log", "BASE TABLE")]
@@ -69,7 +71,7 @@ class TestListTables:
         assert call_args[0][1] == ("audit",)
 
     @patch("server.get_connection")
-    def test_list_tables_empty_result(self, mock_get_connection: MagicMock):
+    def test_list_tables_empty_result(self, mock_get_connection: MagicMock) -> None:
         """テーブルが存在しない場合のテスト"""
         mock_cursor = MagicMock()
         mock_cursor.fetchall.return_value = []
@@ -91,7 +93,9 @@ class TestGetTableSchema:
     """get_table_schema ツールのテスト"""
 
     @patch("server.get_connection")
-    def test_get_table_schema_returns_columns(self, mock_get_connection: MagicMock):
+    def test_get_table_schema_returns_columns(
+        self, mock_get_connection: MagicMock
+    ) -> None:
         """カラム情報がMarkdown Table形式で正しく返されることを確認"""
         mock_cursor = MagicMock()
         mock_cursor.fetchall.return_value = [
@@ -120,7 +124,9 @@ class TestGetTableSchema:
         assert "| email | character varying(255) | YES |" in result
 
     @patch("server.get_connection")
-    def test_get_table_schema_with_custom_schema(self, mock_get_connection: MagicMock):
+    def test_get_table_schema_with_custom_schema(
+        self, mock_get_connection: MagicMock
+    ) -> None:
         """カスタムスキーマを指定した場合のテスト"""
         mock_cursor = MagicMock()
         mock_cursor.fetchall.return_value = [
@@ -147,7 +153,9 @@ class TestGetTableSchema:
         assert call_args[0][1] == ("audit_log", "audit")
 
     @patch("server.get_connection")
-    def test_get_table_schema_nonexistent_table(self, mock_get_connection: MagicMock):
+    def test_get_table_schema_nonexistent_table(
+        self, mock_get_connection: MagicMock
+    ) -> None:
         """存在しないテーブルの場合のテスト"""
         mock_cursor = MagicMock()
         mock_cursor.fetchall.return_value = []
