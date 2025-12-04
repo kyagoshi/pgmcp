@@ -166,6 +166,18 @@ uv run mypy server.py tests/
 uv run ruff check . && uv run ruff format --check . && uv run mypy server.py tests/
 ```
 
+### Pre-commit フック
+
+コミット前に自動でコード品質チェックを実行します。
+
+```bash
+# pre-commitのセットアップ（初回のみ）
+uv run pre-commit install
+
+# 手動で全ファイルに対してチェックを実行
+uv run pre-commit run --all-files
+```
+
 ### ローカルでのサーバー実行
 
 ```bash
