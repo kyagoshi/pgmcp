@@ -15,6 +15,16 @@ PostgreSQLデータベースのテーブル情報を取得するMCPサーバー�
 
 ## インストール
 
+### uvx（インストール不要）
+
+`uvx`を使えばインストール不要で直接実行できます:
+
+```bash
+uvx --from git+https://github.com/kyagoshi/pgmcp pgmcp
+```
+
+### ローカルインストール
+
 ```bash
 # リポジトリをクローン
 git clone https://github.com/kyagoshi/pgmcp.git
@@ -36,8 +46,31 @@ Claude DesktopなどのMCPクライアントで使用する場合、設定ファ
 {
   "mcpServers": {
     "pgmcp": {
-      "command": "uv",
-      "args": ["run", "--directory", "/path/to/pgmcp", "server.py"],
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/kyagoshi/pgmcp", "pgmcp"],
+      "env": {
+        "PGHOST": "localhost",
+        "PGPORT": "5432",
+        "PGDATABASE": "your_database",
+        "PGUSER": "your_username",
+        "PGPASSWORD": "your_password"
+      }
+    }
+  }
+}
+```
+
+### VS Code (GitHub Copilot)
+
+`.vscode/mcp.json` に以下を追加:
+
+```json
+{
+  "servers": {
+    "pgmcp": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/kyagoshi/pgmcp", "pgmcp"],
       "env": {
         "PGHOST": "localhost",
         "PGPORT": "5432",

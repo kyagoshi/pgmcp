@@ -17,7 +17,7 @@ os.environ.setdefault("PGDATABASE", "testdb")
 os.environ.setdefault("PGUSER", "testuser")
 os.environ.setdefault("PGPASSWORD", "testpass")
 
-from server import _get_table_schema_impl, _list_tables_impl, get_connection
+from pgmcp.server import _get_table_schema_impl, _list_tables_impl, get_connection
 
 
 @pytest.fixture(scope="module")

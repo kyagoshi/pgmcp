@@ -6,13 +6,13 @@ PostgreSQL MCPサーバーのユニットテスト
 
 from unittest.mock import MagicMock, patch
 
-from server import _get_table_schema_impl, _list_tables_impl
+from pgmcp.server import _get_table_schema_impl, _list_tables_impl
 
 
 class TestListTables:
     """list_tables ツールのテスト"""
 
-    @patch("server.get_connection")
+    @patch("pgmcp.server.get_connection")
     def test_list_tables_returns_table_list(
         self, mock_get_connection: MagicMock
     ) -> None:
@@ -43,7 +43,7 @@ class TestListTables:
         assert "| users | BASE TABLE |" in result
         assert "| user_view | VIEW |" in result
 
-    @patch("server.get_connection")
+    @patch("pgmcp.server.get_connection")
     def test_list_tables_with_custom_schema(
         self, mock_get_connection: MagicMock
     ) -> None:
@@ -70,7 +70,7 @@ class TestListTables:
         call_args = mock_cursor.execute.call_args
         assert call_args[0][1] == ("audit",)
 
-    @patch("server.get_connection")
+    @patch("pgmcp.server.get_connection")
     def test_list_tables_empty_result(self, mock_get_connection: MagicMock) -> None:
         """テーブルが存在しない場合のテスト"""
         mock_cursor = MagicMock()
@@ -92,7 +92,7 @@ class TestListTables:
 class TestGetTableSchema:
     """get_table_schema ツールのテスト"""
 
-    @patch("server.get_connection")
+    @patch("pgmcp.server.get_connection")
     def test_get_table_schema_returns_columns(
         self, mock_get_connection: MagicMock
     ) -> None:
@@ -123,7 +123,7 @@ class TestGetTableSchema:
         assert "| name | character varying(100) | NO |" in result
         assert "| email | character varying(255) | YES |" in result
 
-    @patch("server.get_connection")
+    @patch("pgmcp.server.get_connection")
     def test_get_table_schema_with_custom_schema(
         self, mock_get_connection: MagicMock
     ) -> None:
@@ -152,7 +152,7 @@ class TestGetTableSchema:
         call_args = mock_cursor.execute.call_args
         assert call_args[0][1] == ("audit_log", "audit")
 
-    @patch("server.get_connection")
+    @patch("pgmcp.server.get_connection")
     def test_get_table_schema_nonexistent_table(
         self, mock_get_connection: MagicMock
     ) -> None:

@@ -1,0 +1,16 @@
+{
+  "servers": {
+    "pgmcp": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/kyagoshi/pgmcp", "pgmcp"],
+      "env": {
+        "PGHOST": "localhost",
+        "PGPORT": "5433",
+        "PGDATABASE": "testdb",
+        "PGUSER": "testuser",
+        "PGPASSWORD": "testpass"
+      }
+    }
+  }
+}
