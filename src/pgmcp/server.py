@@ -7,6 +7,7 @@ PostgreSQLデータベースのテーブル一覧とスキーマ情報を提供�
 from fastmcp import FastMCP
 
 from pgmcp.tools import (
+    generate_er_diagram_impl,
     get_foreign_keys_impl,
     get_table_indexes_impl,
     get_table_schema_impl,
@@ -77,6 +78,26 @@ def get_foreign_keys(table_name: str, schema: str = "public") -> str:
         各外部キーはconstraint_name, column_name, foreign_table, foreign_columnを含む。
     """
     return get_foreign_keys_impl(table_name, schema)
+
+
+@mcp.tool
+def generate_er_diagram(
+    schema: str = "public",
+    tables: list[str] | None = None,
+) -> str:
+    """
+    データベースのテーブル関係をMermaid形式のER図として生成します。
+
+    Args:
+        schema: スキーマ名（デフォルト: "public"）
+        tables: 対象テーブルのリスト（省略時は全テーブル）
+
+    Returns:
+        Mermaid ER図形式の文字列。
+        テーブル名、カラム名、型、主キー、コメント、外部キー関係を含む。
+        Virtual Foreign Keys（命名規則から推測される外部キー）も含む。
+    """
+    return generate_er_diagram_impl(schema, tables)
 
 
 def main() -> None:
