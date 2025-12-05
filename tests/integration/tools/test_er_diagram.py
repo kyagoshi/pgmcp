@@ -2,6 +2,7 @@
 ER図生成ツールの統合テスト
 """
 
+import json
 import shutil
 import subprocess
 import tempfile
@@ -29,12 +30,25 @@ def validate_mermaid_syntax(mermaid_content: str) -> tuple[bool, str]:
     with tempfile.TemporaryDirectory() as tmpdir:
         input_file = Path(tmpdir) / "diagram.mmd"
         output_file = Path(tmpdir) / "diagram.svg"
+        puppeteer_config_file = Path(tmpdir) / "puppeteer-config.json"
 
         input_file.write_text(mermaid_content, encoding="utf-8")
 
+        # Puppeteer config with --no-sandbox for CI environments
+        puppeteer_config = {"args": ["--no-sandbox", "--disable-setuid-sandbox"]}
+        puppeteer_config_file.write_text(json.dumps(puppeteer_config), encoding="utf-8")
+
         try:
             result = subprocess.run(
-                ["mmdc", "-i", str(input_file), "-o", str(output_file)],
+                [
+                    "mmdc",
+                    "-i",
+                    str(input_file),
+                    "-o",
+                    str(output_file),
+                    "-p",
+                    str(puppeteer_config_file),
+                ],
                 capture_output=True,
                 text=True,
                 timeout=30,
