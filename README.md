@@ -7,7 +7,8 @@ PostgreSQLデータベースのテーブル情報を取得するMCPサーバー�
 ## 機能
 
 - **list_tables**: 指定したスキーマのテーブル一覧を取得
-- **get_table_schema**: 指定したテーブルのカラム情報（名前、型、NULL許可、デフォルト値、主キー）を取得
+- **get_table_schema**: 指定したテーブルのカラム情報（名前、型、NULL許可、デフォルト値、主キー、コメント）を取得
+- **get_table_indexes**: 指定したテーブルのインデックス情報（名前、カラム、ユニーク、タイプ、定義）を取得
 
 ## 要件
 
@@ -121,11 +122,29 @@ uv sync
 **出力例:**
 
 ```text
-| column_name | data_type | nullable | default | PK |
-|-------------|-----------|----------|---------|-----|
-| id | integer | NO | nextval('users_id_seq'::regclass) | ✓ |
-| name | character varying(100) | NO | - |  |
-| email | character varying(255) | YES | - |  |
+| column_name | data_type | nullable | default | PK | comment |
+|-------------|-----------|----------|---------|-----|----------|
+| id | integer | NO | nextval('users_id_seq'::regclass) | ✓ | ユーザーID |
+| name | character varying(100) | NO | - |  | ユーザー名 |
+| email | character varying(255) | YES | - |  | メールアドレス |
+```
+
+### get_table_indexes
+
+指定したテーブルのインデックス情報を取得します。
+
+**パラメータ:**
+
+- `table_name` (string, required): テーブル名
+- `schema` (string, optional): スキーマ名。デフォルトは `"public"`
+
+**出力例:**
+
+```text
+| index_name | columns | unique | type | definition |
+|------------|---------|--------|------|------------|
+| users_pkey | id | ✓ | btree | CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id) |
+| users_email_idx | email | ✓ | btree | CREATE UNIQUE INDEX users_email_idx ON public.users USING btree (email) |
 ```
 
 ## 開発

@@ -42,21 +42,45 @@ def _format_table_list(rows: list[tuple[Any, ...]]) -> str:
     return "\n".join(lines)
 
 
+def _format_table_indexes(rows: list[tuple[Any, ...]]) -> str:
+    """インデックス一覧をMarkdown Table形式にフォーマット"""
+    if not rows:
+        return "インデックスが見つかりませんでした。"
+
+    lines = [
+        "| index_name | columns | unique | type | definition |",
+        "|------------|---------|--------|------|------------|",
+    ]
+    for row in rows:
+        index_name, columns, is_unique, index_type, definition = row
+        unique = "✓" if is_unique else ""
+        lines.append(
+            f"| {index_name} | {columns} | {unique} | {index_type} | {definition} |"
+        )
+
+    return "\n".join(lines)
+
+
 def _format_table_schema(rows: list[tuple[Any, ...]]) -> str:
     """テーブルスキーマをMarkdown Table形式にフォーマット"""
     if not rows:
         return "テーブルが見つかりませんでした。"
 
     lines = [
-        "| column_name | data_type | nullable | default | PK |",
-        "|-------------|-----------|----------|---------|-----|",
+        "| column_name | data_type | nullable | default | PK | comment |",
+        "|-------------|-----------|----------|---------|-----|---------|",
     ]
     for row in rows:
-        column_name, data_type, is_nullable, column_default, is_primary_key = row
+        column_name, data_type, is_nullable, column_default, is_primary_key, comment = (
+            row
+        )
         nullable = "YES" if is_nullable == "YES" else "NO"
         default = column_default if column_default else "-"
         pk = "✓" if is_primary_key else ""
-        lines.append(f"| {column_name} | {data_type} | {nullable} | {default} | {pk} |")
+        comment_str = comment if comment else ""
+        lines.append(
+            f"| {column_name} | {data_type} | {nullable} | {default} | {pk} | {comment_str} |"
+        )
 
     return "\n".join(lines)
 
@@ -111,7 +135,8 @@ def _get_table_schema_impl(table_name: str, schema: str = "public") -> str:
                    AND a.attnum = ANY(con.conkey)
                    AND con.contype = 'p'),
                 FALSE
-            ) AS is_primary_key
+            ) AS is_primary_key,
+            pg_catalog.col_description(a.attrelid, a.attnum) AS column_comment
         FROM pg_catalog.pg_attribute a
         JOIN pg_catalog.pg_class c ON c.oid = a.attrelid
         JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
@@ -155,9 +180,67 @@ def get_table_schema(table_name: str, schema: str = "public") -> str:
 
     Returns:
         カラム情報のMarkdown Table形式の文字列。
-        各カラムはcolumn_name, data_type, nullable, default, PKを含む。
+        各カラムはcolumn_name, data_type, nullable, default, PK, commentを含む。
     """
     return _get_table_schema_impl(table_name, schema)
+
+
+def _get_table_indexes_impl(table_name: str, schema: str = "public") -> str:
+    """
+    指定したテーブルのインデックス情報を取得します（内部実装）。
+
+    Args:
+        table_name: テーブル名
+        schema: スキーマ名（デフォルト: "public"）
+
+    Returns:
+        インデックス情報のMarkdown Table形式の文字列。
+    """
+    query = """
+        SELECT
+            i.relname AS index_name,
+            array_to_string(
+                ARRAY(
+                    SELECT pg_catalog.pg_get_indexdef(ix.indexrelid, k + 1, true)
+                    FROM generate_subscripts(ix.indkey, 1) AS k
+                    ORDER BY k
+                ),
+                ', '
+            ) AS columns,
+            ix.indisunique AS is_unique,
+            am.amname AS index_type,
+            pg_catalog.pg_get_indexdef(ix.indexrelid) AS definition
+        FROM pg_catalog.pg_index ix
+        JOIN pg_catalog.pg_class i ON i.oid = ix.indexrelid
+        JOIN pg_catalog.pg_class t ON t.oid = ix.indrelid
+        JOIN pg_catalog.pg_namespace n ON n.oid = t.relnamespace
+        JOIN pg_catalog.pg_am am ON am.oid = i.relam
+        WHERE t.relname = %s
+          AND n.nspname = %s
+        ORDER BY i.relname
+    """
+
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(query, (table_name, schema))
+        rows = cur.fetchall()
+
+    return _format_table_indexes(rows)
+
+
+@mcp.tool
+def get_table_indexes(table_name: str, schema: str = "public") -> str:
+    """
+    指定したテーブルのインデックス情報を取得します。
+
+    Args:
+        table_name: テーブル名
+        schema: スキーマ名（デフォルト: "public"）
+
+    Returns:
+        インデックス情報のMarkdown Table形式の文字列。
+        各インデックスはindex_name, columns, unique, type, definitionを含む。
+    """
+    return _get_table_indexes_impl(table_name, schema)
 
 
 def main() -> None:

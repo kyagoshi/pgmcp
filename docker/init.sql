@@ -1,5 +1,6 @@
 -- テスト用のサンプルテーブルを作成
 -- Issue #1: テストデータのバリエーションの拡充
+-- Issue #2: コメントやインデックス情報の取得機能
 
 -- =============================================================================
 -- 基本テーブル（既存）
@@ -13,6 +14,17 @@ CREATE TABLE users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- usersテーブルとカラムにコメントを追加
+COMMENT ON TABLE users IS 'ユーザー情報を管理するテーブル';
+COMMENT ON COLUMN users.id IS 'ユーザーID（自動採番）';
+COMMENT ON COLUMN users.name IS 'ユーザー名';
+COMMENT ON COLUMN users.email IS 'メールアドレス';
+COMMENT ON COLUMN users.created_at IS 'レコード作成日時';
+
+-- usersテーブルにインデックスを追加
+CREATE UNIQUE INDEX users_email_idx ON users (email) WHERE email IS NOT NULL;
+CREATE INDEX users_created_at_idx ON users (created_at);
+
 -- ordersテーブル
 CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
@@ -22,6 +34,17 @@ CREATE TABLE orders (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- ordersテーブルにコメントとインデックスを追加
+COMMENT ON TABLE orders IS '注文情報を管理するテーブル';
+COMMENT ON COLUMN orders.id IS '注文ID';
+COMMENT ON COLUMN orders.user_id IS '注文したユーザーのID';
+COMMENT ON COLUMN orders.total_amount IS '注文の合計金額';
+COMMENT ON COLUMN orders.status IS '注文ステータス（pending/completed/shipped）';
+CREATE INDEX orders_user_id_idx ON orders (user_id);
+CREATE INDEX orders_status_idx ON orders (status);
+CREATE INDEX orders_user_status_idx ON orders (user_id, status);
+CREATE INDEX orders_user_created_idx ON orders (user_id, created_at DESC);
+
 -- productsテーブル
 CREATE TABLE products (
     id SERIAL PRIMARY KEY,
@@ -30,6 +53,13 @@ CREATE TABLE products (
     price DECIMAL(10, 2) NOT NULL,
     stock INTEGER DEFAULT 0
 );
+
+-- productsテーブルにコメントとインデックスを追加
+COMMENT ON TABLE products IS '商品情報を管理するテーブル';
+COMMENT ON COLUMN products.name IS '商品名';
+COMMENT ON COLUMN products.price IS '商品価格';
+CREATE INDEX products_name_idx ON products USING gin (to_tsvector('english', name));
+CREATE INDEX products_price_idx ON products (price);
 
 -- auditスキーマを作成
 CREATE SCHEMA audit;
