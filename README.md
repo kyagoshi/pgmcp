@@ -10,6 +10,7 @@ PostgreSQLデータベースのテーブル情報を取得するMCPサーバー�
 - **get_table_schema**: 指定したテーブルのカラム情報（名前、型、NULL許可、デフォルト値、主キー、コメント）を取得
 - **get_table_indexes**: 指定したテーブルのインデックス情報（名前、カラム、ユニーク、タイプ、定義）を取得
 - **get_foreign_keys**: 指定したテーブルの外部キー情報（制約名、カラム、参照先テーブル、参照先カラム）を取得
+- **generate_er_diagram** [BETA]: データベースのテーブル関係をMermaid形式のER図として生成
 
 ## 要件
 
@@ -164,6 +165,41 @@ uv sync
 |-----------------|-------------|---------------|----------------|
 | orders_user_id_fkey | user_id | users | id |
 ```
+
+### generate_er_diagram [BETA]
+
+データベースのテーブル関係をMermaid形式のER図として生成します。
+
+> **注意**: この機能はベータ版です。特殊文字（`!`, `@`, `#`など）を含むテーブル名やカラム名はMermaid構文でサポートされていないため、エラーが発生する可能性があります。詳細は [Issue #9](https://github.com/kyagoshi/pgmcp/issues/9) を参照してください。
+
+**パラメータ:**
+
+- `schema` (string, optional): スキーマ名。デフォルトは `"public"`
+- `tables` (list[string], optional): 対象テーブルのリスト。省略時は全テーブル（最大100件）
+
+**出力例:**
+
+```mermaid
+erDiagram
+    users {
+        integer id PK "ユーザーID"
+        varchar name "ユーザー名"
+        varchar email "メールアドレス"
+    }
+    orders {
+        integer id PK "注文ID"
+        integer user_id FK "ユーザーID"
+        numeric total_amount "合計金額"
+    }
+    users ||--o{ orders : "has"
+```
+
+**特徴:**
+
+- 実際の外部キー関係を実線（`||--o{`）で表示
+- 仮想外部キー（命名規則から推測）を点線（`||..o{`）で表示
+  - `_id` または `_no` サフィックスを持つカラム
+  - 他のテーブルの主キー名と一致するカラム
 
 ## 開発
 
