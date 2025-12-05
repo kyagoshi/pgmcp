@@ -65,6 +65,7 @@ The following is a summary of licenses for all transitive dependencies:
 | cffi | MIT | Armin Rigo, Maciej Fijalkowski |
 | charset-normalizer | MIT | - |
 | click | BSD-3-Clause | - |
+| coverage | Apache-2.0 | Ned Batchelder |
 | cryptography | Apache-2.0, BSD-3-Clause | - |
 | cyclopts | Apache-2.0 | Brian Pugh |
 | diskcache | Apache-2.0 | Grant Jenks |
@@ -97,6 +98,7 @@ The following is a summary of licenses for all transitive dependencies:
 | pygments | BSD | - |
 | pyjwt | MIT | - |
 | pyperclip | BSD | - |
+| pytest-cov | MIT | Marc Schlaich |
 | python-dotenv | BSD-3-Clause | - |
 | python-multipart | Apache-2.0 | - |
 | pyyaml | MIT | Kirill Simonov |

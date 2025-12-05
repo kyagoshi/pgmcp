@@ -143,3 +143,254 @@ class TestDatabaseConnection:
             assert result[0] == "testdb"
 
         conn.close()
+
+
+class TestNumericTypesIntegration:
+    """数値型テストテーブルの統合テスト"""
+
+    def test_numeric_types_table_schema(self, db_connection: bool) -> None:
+        """数値型テーブルのスキーマを取得"""
+        result = _get_table_schema_impl("numeric_types_test", schema="public")
+
+        assert "| smallint_col | smallint |" in result
+        assert "| bigint_col | bigint |" in result
+        assert "| numeric_col | numeric(20,5) |" in result
+        assert "| real_col | real |" in result
+        assert "| double_col | double precision |" in result
+
+
+class TestStringTypesIntegration:
+    """文字列型テストテーブルの統合テスト"""
+
+    def test_string_types_table_schema(self, db_connection: bool) -> None:
+        """文字列型テーブルのスキーマを取得"""
+        result = _get_table_schema_impl("string_types_test", schema="public")
+
+        assert "| char_col | character(10) |" in result
+        assert "| varchar_col | character varying(255) |" in result
+        assert "| text_col | text |" in result
+
+
+class TestDatetimeTypesIntegration:
+    """日付・時刻型テストテーブルの統合テスト"""
+
+    def test_datetime_types_table_schema(self, db_connection: bool) -> None:
+        """日付・時刻型テーブルのスキーマを取得"""
+        result = _get_table_schema_impl("datetime_types_test", schema="public")
+
+        assert "| date_col | date |" in result
+        assert "| time_col | time without time zone |" in result
+        assert "| time_with_tz | time with time zone |" in result
+        assert "| timestamp_col | timestamp without time zone |" in result
+        assert "| timestamp_with_tz | timestamp with time zone |" in result
+        assert "| interval_col | interval |" in result
+
+
+class TestJsonTypesIntegration:
+    """JSON型テストテーブルの統合テスト"""
+
+    def test_json_types_table_schema(self, db_connection: bool) -> None:
+        """JSON型テーブルのスキーマを取得"""
+        result = _get_table_schema_impl("json_types_test", schema="public")
+
+        assert "| json_col | json |" in result
+        assert "| jsonb_col | jsonb |" in result
+
+
+class TestArrayTypesIntegration:
+    """配列型テストテーブルの統合テスト"""
+
+    def test_array_types_table_schema(self, db_connection: bool) -> None:
+        """配列型テーブルのスキーマを取得"""
+        result = _get_table_schema_impl("array_types_test", schema="public")
+
+        assert "| int_array | integer[] |" in result
+        assert "| text_array | text[] |" in result
+        assert "| multi_dim_array | integer[] |" in result
+
+
+class TestUuidTypesIntegration:
+    """UUID型テストテーブルの統合テスト"""
+
+    def test_uuid_types_table_schema(self, db_connection: bool) -> None:
+        """UUID型テーブルのスキーマを取得"""
+        result = _get_table_schema_impl("uuid_types_test", schema="public")
+
+        assert "| id | uuid |" in result
+        assert "| reference_id | uuid |" in result
+
+
+class TestBinaryTypesIntegration:
+    """バイナリ型テストテーブルの統合テスト"""
+
+    def test_binary_types_table_schema(self, db_connection: bool) -> None:
+        """バイナリ型テーブルのスキーマを取得"""
+        result = _get_table_schema_impl("binary_types_test", schema="public")
+
+        assert "| binary_data | bytea |" in result
+
+
+class TestEdgeCasesIntegration:
+    """エッジケーステストテーブルの統合テスト"""
+
+    def test_nullable_table_schema(self, db_connection: bool) -> None:
+        """NULL値を含むテーブルのスキーマを取得"""
+        result = _get_table_schema_impl("nullable_test", schema="public")
+
+        assert "| required_col | character varying(100) | NO |" in result
+        assert "| nullable_col | character varying(100) | YES |" in result
+        assert "| nullable_with_default | character varying(100) | YES |" in result
+
+    def test_empty_default_table_schema(self, db_connection: bool) -> None:
+        """空文字デフォルト値テーブルのスキーマを取得"""
+        result = _get_table_schema_impl("empty_default_test", schema="public")
+
+        assert "| empty_string_default |" in result
+        assert "| space_default |" in result
+        assert "| normal_default |" in result
+
+    def test_special_characters_table_exists(self, db_connection: bool) -> None:
+        """特殊文字を含むテーブルが一覧に含まれることを確認"""
+        result = _list_tables_impl(schema="public")
+
+        assert "Special-Table_Name!@#" in result
+
+    def test_special_characters_table_schema(self, db_connection: bool) -> None:
+        """特殊文字を含むテーブルのスキーマを取得"""
+        result = _get_table_schema_impl("Special-Table_Name!@#", schema="public")
+
+        assert "Column With Spaces" in result
+        assert "column-with-dashes" in result
+        assert "日本語カラム" in result
+
+    def test_long_table_name_exists(self, db_connection: bool) -> None:
+        """長いテーブル名のテーブルが一覧に含まれることを確認"""
+        result = _list_tables_impl(schema="public")
+
+        # PostgreSQLは識別子を63文字に切り詰めるため、切り詰められた名前で確認
+        assert (
+            "this_is_a_very_long_table_name_that_tests_the_limits_of_identif" in result
+        )
+
+    def test_long_table_name_schema(self, db_connection: bool) -> None:
+        """長いテーブル名のテーブルのスキーマを取得"""
+        # PostgreSQLは識別子を63文字に切り詰める
+        result = _get_table_schema_impl(
+            "this_is_a_very_long_table_name_that_tests_the_limits_of_identif",
+            schema="public",
+        )
+
+        # カラム名も63文字に切り詰められている
+        assert (
+            "this_is_a_very_long_column_name_that_also_tests_identifier_limi" in result
+        )
+
+
+class TestComplexRelationsIntegration:
+    """複雑なリレーションテストテーブルの統合テスト"""
+
+    def test_composite_pk_table_schema(self, db_connection: bool) -> None:
+        """複合主キーテーブルのスキーマを取得"""
+        result = _get_table_schema_impl("composite_pk_test", schema="public")
+
+        # 両方のキーパートが主キーとしてマークされていることを確認
+        assert "| key_part1 | integer | NO |" in result
+        assert "| key_part2 | character varying(50) | NO |" in result
+        # 少なくとも2つの主キーマーカーがあることを確認
+        assert result.count("✓") >= 2
+
+    def test_multiple_fk_table_schema(self, db_connection: bool) -> None:
+        """複数外部キーテーブルのスキーマを取得"""
+        result = _get_table_schema_impl("multiple_fk_test", schema="public")
+
+        assert "| user_id | integer |" in result
+        assert "| category_id | integer |" in result
+        assert "| tag_id | integer |" in result
+
+    def test_self_reference_table_schema(self, db_connection: bool) -> None:
+        """自己参照外部キーテーブルのスキーマを取得"""
+        result = _get_table_schema_impl("self_reference_test", schema="public")
+
+        assert "| parent_id | integer | YES |" in result
+
+    def test_cascade_tables_exist(self, db_connection: bool) -> None:
+        """カスケードテーブルが一覧に含まれることを確認"""
+        result = _list_tables_impl(schema="public")
+
+        assert "cascade_parent" in result
+        assert "cascade_child" in result
+        assert "cascade_set_null" in result
+
+
+class TestOtherTablesIntegration:
+    """その他のテストテーブルの統合テスト"""
+
+    def test_many_columns_table_schema(self, db_connection: bool) -> None:
+        """大量カラムテーブルのスキーマを取得"""
+        result = _get_table_schema_impl("many_columns_test", schema="public")
+
+        # 複数のカラムが含まれていることを確認
+        assert "| col_01 |" in result
+        assert "| col_10 |" in result
+        assert "| col_20 |" in result
+        assert "| col_30 |" in result
+
+    def test_partitioned_table_exists(self, db_connection: bool) -> None:
+        """パーティションテーブルが一覧に含まれることを確認"""
+        result = _list_tables_impl(schema="public")
+
+        assert "partitioned_logs" in result
+        assert "partitioned_logs_2024" in result
+        assert "partitioned_logs_2025" in result
+
+    def test_inheritance_tables_exist(self, db_connection: bool) -> None:
+        """継承テーブルが一覧に含まれることを確認"""
+        result = _list_tables_impl(schema="public")
+
+        assert "base_entity" in result
+        assert "person_entity" in result
+        assert "organization_entity" in result
+
+    def test_inheritance_child_table_schema(self, db_connection: bool) -> None:
+        """継承子テーブルのスキーマを取得（親のカラムも含む）"""
+        result = _get_table_schema_impl("person_entity", schema="public")
+
+        # 親テーブルのカラム
+        assert "| id | integer |" in result
+        assert "| name | character varying(100) |" in result
+        assert "| created_at |" in result
+        # 子テーブル固有のカラム
+        assert "| email | character varying(255) |" in result
+        assert "| birth_date | date |" in result
+
+
+class TestListTablesExtended:
+    """list_tables の拡張統合テスト"""
+
+    def test_list_tables_includes_all_new_tables(self, db_connection: bool) -> None:
+        """すべての新しいテストテーブルが一覧に含まれることを確認"""
+        result = _list_tables_impl(schema="public")
+
+        expected_tables = [
+            "numeric_types_test",
+            "string_types_test",
+            "datetime_types_test",
+            "json_types_test",
+            "array_types_test",
+            "uuid_types_test",
+            "binary_types_test",
+            "nullable_test",
+            "empty_default_test",
+            "composite_pk_test",
+            "categories",
+            "tags",
+            "multiple_fk_test",
+            "self_reference_test",
+            "cascade_parent",
+            "cascade_child",
+            "cascade_set_null",
+            "many_columns_test",
+        ]
+
+        for table in expected_tables:
+            assert table in result, f"テーブル '{table}' が一覧に含まれていません"

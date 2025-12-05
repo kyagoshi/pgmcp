@@ -1,4 +1,9 @@
 -- テスト用のサンプルテーブルを作成
+-- Issue #1: テストデータのバリエーションの拡充
+
+-- =============================================================================
+-- 基本テーブル（既存）
+-- =============================================================================
 
 -- usersテーブル
 CREATE TABLE users (
@@ -39,7 +44,211 @@ CREATE TABLE audit.logs (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- サンプルデータを挿入
+-- =============================================================================
+-- データ型のバリエーション
+-- =============================================================================
+
+-- 数値型テスト用テーブル（smallint, bigint, numeric, real, double precision）
+CREATE TABLE numeric_types_test (
+    id SERIAL PRIMARY KEY,
+    smallint_col SMALLINT,
+    bigint_col BIGINT,
+    numeric_col NUMERIC(20, 5),
+    real_col REAL,
+    double_col DOUBLE PRECISION
+);
+
+-- 文字列型テスト用テーブル（char, varchar, text）
+CREATE TABLE string_types_test (
+    id SERIAL PRIMARY KEY,
+    char_col CHAR(10),
+    varchar_col VARCHAR(255),
+    text_col TEXT
+);
+
+-- 日付・時刻型テスト用テーブル（date, time, timestamp, interval）
+CREATE TABLE datetime_types_test (
+    id SERIAL PRIMARY KEY,
+    date_col DATE,
+    time_col TIME,
+    time_with_tz TIME WITH TIME ZONE,
+    timestamp_col TIMESTAMP,
+    timestamp_with_tz TIMESTAMP WITH TIME ZONE,
+    interval_col INTERVAL
+);
+
+-- JSON型テスト用テーブル（json, jsonb）
+CREATE TABLE json_types_test (
+    id SERIAL PRIMARY KEY,
+    json_col JSON,
+    jsonb_col JSONB
+);
+
+-- 配列型テスト用テーブル（integer[], text[]）
+CREATE TABLE array_types_test (
+    id SERIAL PRIMARY KEY,
+    int_array INTEGER[],
+    text_array TEXT[],
+    multi_dim_array INTEGER[][]
+);
+
+-- UUID型テスト用テーブル
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE uuid_types_test (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(100),
+    reference_id UUID
+);
+
+-- バイナリ型テスト用テーブル（bytea）
+CREATE TABLE binary_types_test (
+    id SERIAL PRIMARY KEY,
+    binary_data BYTEA,
+    file_name VARCHAR(255)
+);
+
+-- =============================================================================
+-- エッジケース
+-- =============================================================================
+
+-- NULL値を含むカラムのテスト用テーブル
+CREATE TABLE nullable_test (
+    id SERIAL PRIMARY KEY,
+    required_col VARCHAR(100) NOT NULL,
+    nullable_col VARCHAR(100),
+    nullable_with_default VARCHAR(100) DEFAULT NULL
+);
+
+-- 空文字のデフォルト値テスト用テーブル
+CREATE TABLE empty_default_test (
+    id SERIAL PRIMARY KEY,
+    empty_string_default VARCHAR(100) DEFAULT '',
+    space_default VARCHAR(100) DEFAULT ' ',
+    normal_default VARCHAR(100) DEFAULT 'default_value'
+);
+
+-- 特殊文字を含むテーブル名・カラム名
+CREATE TABLE "Special-Table_Name!@#" (
+    id SERIAL PRIMARY KEY,
+    "Column With Spaces" VARCHAR(100),
+    "column-with-dashes" VARCHAR(100),
+    "日本語カラム" VARCHAR(100)
+);
+
+-- 長いテーブル名・カラム名
+CREATE TABLE this_is_a_very_long_table_name_that_tests_the_limits_of_identifier_length (
+    id SERIAL PRIMARY KEY,
+    this_is_a_very_long_column_name_that_also_tests_identifier_limits VARCHAR(100)
+);
+
+-- =============================================================================
+-- 複雑なリレーション
+-- =============================================================================
+
+-- 複合主キーテスト用テーブル
+CREATE TABLE composite_pk_test (
+    key_part1 INTEGER NOT NULL,
+    key_part2 VARCHAR(50) NOT NULL,
+    value TEXT,
+    PRIMARY KEY (key_part1, key_part2)
+);
+
+-- 複数の外部キーテスト用テーブル
+CREATE TABLE categories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE tags (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE multiple_fk_test (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    category_id INTEGER REFERENCES categories(id),
+    tag_id INTEGER REFERENCES tags(id),
+    description TEXT
+);
+
+-- 自己参照外部キーテスト用テーブル
+CREATE TABLE self_reference_test (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    parent_id INTEGER REFERENCES self_reference_test(id)
+);
+
+-- カスケード削除・更新テスト用テーブル
+CREATE TABLE cascade_parent (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE cascade_child (
+    id SERIAL PRIMARY KEY,
+    parent_id INTEGER NOT NULL REFERENCES cascade_parent(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    value TEXT
+);
+
+CREATE TABLE cascade_set_null (
+    id SERIAL PRIMARY KEY,
+    parent_id INTEGER REFERENCES cascade_parent(id) ON DELETE SET NULL ON UPDATE SET NULL,
+    value TEXT
+);
+
+-- =============================================================================
+-- その他
+-- =============================================================================
+
+-- 大量のカラムを持つテーブル
+CREATE TABLE many_columns_test (
+    id SERIAL PRIMARY KEY,
+    col_01 VARCHAR(100), col_02 VARCHAR(100), col_03 VARCHAR(100), col_04 VARCHAR(100), col_05 VARCHAR(100),
+    col_06 VARCHAR(100), col_07 VARCHAR(100), col_08 VARCHAR(100), col_09 VARCHAR(100), col_10 VARCHAR(100),
+    col_11 INTEGER, col_12 INTEGER, col_13 INTEGER, col_14 INTEGER, col_15 INTEGER,
+    col_16 INTEGER, col_17 INTEGER, col_18 INTEGER, col_19 INTEGER, col_20 INTEGER,
+    col_21 TEXT, col_22 TEXT, col_23 TEXT, col_24 TEXT, col_25 TEXT,
+    col_26 BOOLEAN, col_27 BOOLEAN, col_28 BOOLEAN, col_29 BOOLEAN, col_30 BOOLEAN
+);
+
+-- パーティションテーブル（PostgreSQL 10+）
+CREATE TABLE partitioned_logs (
+    id SERIAL,
+    log_date DATE NOT NULL,
+    message TEXT,
+    PRIMARY KEY (id, log_date)
+) PARTITION BY RANGE (log_date);
+
+CREATE TABLE partitioned_logs_2024 PARTITION OF partitioned_logs
+    FOR VALUES FROM ('2024-01-01') TO ('2025-01-01');
+
+CREATE TABLE partitioned_logs_2025 PARTITION OF partitioned_logs
+    FOR VALUES FROM ('2025-01-01') TO ('2026-01-01');
+
+-- 継承テーブル
+CREATE TABLE base_entity (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE person_entity (
+    email VARCHAR(255),
+    birth_date DATE
+) INHERITS (base_entity);
+
+CREATE TABLE organization_entity (
+    tax_id VARCHAR(50),
+    employee_count INTEGER
+) INHERITS (base_entity);
+
+-- =============================================================================
+-- サンプルデータの挿入
+-- =============================================================================
+
+-- 基本テーブル
 INSERT INTO users (name, email) VALUES
     ('Alice', 'alice@example.com'),
     ('Bob', 'bob@example.com'),
@@ -54,3 +263,105 @@ INSERT INTO orders (user_id, total_amount, status) VALUES
     (1, 1329.98, 'completed'),
     (2, 29.99, 'pending'),
     (1, 149.99, 'shipped');
+
+-- 数値型テスト
+INSERT INTO numeric_types_test (smallint_col, bigint_col, numeric_col, real_col, double_col) VALUES
+    (32767, 9223372036854775807, 12345.67890, 3.14159, 3.141592653589793),
+    (-32768, -9223372036854775808, -12345.67890, -3.14159, -3.141592653589793),
+    (NULL, NULL, NULL, NULL, NULL);
+
+-- 文字列型テスト
+INSERT INTO string_types_test (char_col, varchar_col, text_col) VALUES
+    ('ABCD      ', 'Variable length string', 'This is a very long text that can contain much more data than varchar'),
+    ('', '', ''),
+    (NULL, NULL, NULL);
+
+-- 日付・時刻型テスト
+INSERT INTO datetime_types_test (date_col, time_col, time_with_tz, timestamp_col, timestamp_with_tz, interval_col) VALUES
+    ('2025-12-05', '12:30:00', '12:30:00+09:00', '2025-12-05 12:30:00', '2025-12-05 12:30:00+09:00', '1 year 2 months 3 days'),
+    ('1970-01-01', '00:00:00', '00:00:00+00:00', '1970-01-01 00:00:00', '1970-01-01 00:00:00+00:00', '0 seconds'),
+    (NULL, NULL, NULL, NULL, NULL, NULL);
+
+-- JSON型テスト
+INSERT INTO json_types_test (json_col, jsonb_col) VALUES
+    ('{"name": "test", "value": 123}', '{"name": "test", "value": 123, "nested": {"key": "value"}}'),
+    ('[]', '[]'),
+    (NULL, NULL);
+
+-- 配列型テスト
+INSERT INTO array_types_test (int_array, text_array, multi_dim_array) VALUES
+    ('{1, 2, 3, 4, 5}', '{"apple", "banana", "cherry"}', '{{1,2},{3,4}}'),
+    ('{}', '{}', '{}'),
+    (NULL, NULL, NULL);
+
+-- UUID型テスト
+INSERT INTO uuid_types_test (name, reference_id) VALUES
+    ('First UUID', uuid_generate_v4()),
+    ('Second UUID', NULL);
+
+-- バイナリ型テスト
+INSERT INTO binary_types_test (binary_data, file_name) VALUES
+    (E'\\x48656C6C6F', 'hello.bin'),
+    (NULL, 'empty.bin');
+
+-- NULL値テスト
+INSERT INTO nullable_test (required_col, nullable_col, nullable_with_default) VALUES
+    ('Required', 'Has value', 'Custom value'),
+    ('Required only', NULL, NULL);
+
+-- 空文字デフォルト値テスト
+INSERT INTO empty_default_test (empty_string_default, space_default, normal_default) VALUES
+    (DEFAULT, DEFAULT, DEFAULT);
+
+-- 特殊文字テーブルテスト
+INSERT INTO "Special-Table_Name!@#" ("Column With Spaces", "column-with-dashes", "日本語カラム") VALUES
+    ('value1', 'value2', '日本語の値');
+
+-- 複合主キーテスト
+INSERT INTO composite_pk_test (key_part1, key_part2, value) VALUES
+    (1, 'A', 'First combination'),
+    (1, 'B', 'Second combination'),
+    (2, 'A', 'Third combination');
+
+-- 複数外部キーテスト
+INSERT INTO categories (name) VALUES ('Electronics'), ('Books');
+INSERT INTO tags (name) VALUES ('Sale'), ('New');
+INSERT INTO multiple_fk_test (user_id, category_id, tag_id, description) VALUES
+    (1, 1, 1, 'User 1 in Electronics with Sale tag'),
+    (2, 2, 2, 'User 2 in Books with New tag');
+
+-- 自己参照テスト
+INSERT INTO self_reference_test (name, parent_id) VALUES
+    ('Root', NULL),
+    ('Child 1', 1),
+    ('Child 2', 1),
+    ('Grandchild', 2);
+
+-- カスケードテスト
+INSERT INTO cascade_parent (name) VALUES ('Parent 1'), ('Parent 2');
+INSERT INTO cascade_child (parent_id, value) VALUES (1, 'Child of Parent 1');
+INSERT INTO cascade_set_null (parent_id, value) VALUES (1, 'Child with set null');
+
+-- 大量カラムテスト
+INSERT INTO many_columns_test (
+    col_01, col_02, col_03, col_04, col_05,
+    col_11, col_12, col_13, col_14, col_15,
+    col_21, col_22,
+    col_26, col_27
+) VALUES (
+    'val1', 'val2', 'val3', 'val4', 'val5',
+    1, 2, 3, 4, 5,
+    'text1', 'text2',
+    true, false
+);
+
+-- パーティションテーブルテスト
+INSERT INTO partitioned_logs (log_date, message) VALUES
+    ('2024-06-15', 'Log from 2024'),
+    ('2025-03-20', 'Log from 2025');
+
+-- 継承テーブルテスト
+INSERT INTO person_entity (name, email, birth_date) VALUES
+    ('John Doe', 'john@example.com', '1990-01-15');
+INSERT INTO organization_entity (name, tax_id, employee_count) VALUES
+    ('Acme Corp', '123-456-789', 100);
