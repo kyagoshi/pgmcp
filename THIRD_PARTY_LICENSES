@@ -1,0 +1,131 @@
+# Third Party Licenses
+
+This project uses the following third-party libraries. We are grateful to
+the developers and maintainers of these projects.
+
+## Direct Dependencies
+
+### fastmcp
+
+- Version: 2.13.3
+- License: Apache Software License
+- Author: Jeremiah Lowin
+- Homepage: https://github.com/jlowin/fastmcp
+
+```
+Copyright 2024 Jeremiah Lowin
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
+
+### psycopg2-binary
+
+- Version: 2.9.11
+- License: GNU Lesser General Public License (LGPL)
+- Author: Federico Di Gregorio
+- Homepage: https://psycopg.org/
+
+```
+psycopg2 is free software: you can redistribute it and/or modify it
+under the terms of the GNU Lesser General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+psycopg2 is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+License for more details.
+```
+
+---
+
+## Transitive Dependencies
+
+The following is a summary of licenses for all transitive dependencies:
+
+| Package | License | Author |
+|---------|---------|--------|
+| annotated-types | MIT | - |
+| anyio | MIT | - |
+| attrs | MIT | - |
+| authlib | BSD | - |
+| beartype | MIT | - |
+| cachetools | MIT | Thomas Kemmer |
+| certifi | MPL 2.0 | Kenneth Reitz |
+| cffi | MIT | Armin Rigo, Maciej Fijalkowski |
+| charset-normalizer | MIT | - |
+| click | BSD-3-Clause | - |
+| cryptography | Apache-2.0, BSD-3-Clause | - |
+| cyclopts | Apache-2.0 | Brian Pugh |
+| diskcache | Apache-2.0 | Grant Jenks |
+| dnspython | ISC | - |
+| docstring-parser | MIT | - |
+| docutils | BSD, GPL, Public Domain | - |
+| email-validator | Unlicense | Joshua Tauberer |
+| exceptiongroup | MIT | - |
+| h11 | MIT | Nathaniel J. Smith |
+| httpcore | BSD | - |
+| httpx | BSD | - |
+| httpx-sse | MIT | - |
+| idna | BSD-3-Clause | - |
+| jsonschema | MIT | - |
+| jsonschema-path | Apache-2.0 | Artur Maciag |
+| jsonschema-specifications | MIT | - |
+| markdown-it-py | MIT | - |
+| mcp | MIT | Anthropic, PBC. |
+| mdurl | MIT | - |
+| openapi-pydantic | MIT | Mike Oakley |
+| pathable | Apache-2.0 | Artur Maciag |
+| pathvalidate | MIT | Tsuyoshi Hombashi |
+| platformdirs | MIT | - |
+| py-key-value-aio | Apache-2.0 | - |
+| py-key-value-shared | Apache-2.0 | - |
+| pycparser | BSD | Eli Bendersky |
+| pydantic | MIT | - |
+| pydantic-core | MIT | - |
+| pydantic-settings | MIT | - |
+| pygments | BSD | - |
+| pyjwt | MIT | - |
+| pyperclip | BSD | - |
+| python-dotenv | BSD-3-Clause | - |
+| python-multipart | Apache-2.0 | - |
+| pyyaml | MIT | Kirill Simonov |
+| referencing | MIT | - |
+| requests | Apache-2.0 | Kenneth Reitz |
+| rich | MIT | Will McGugan |
+| rich-rst | MIT | - |
+| rpds-py | MIT | - |
+| sse-starlette | BSD-3-Clause | - |
+| starlette | BSD-3-Clause | - |
+| tomli | MIT | - |
+| typing-extensions | PSF-2.0 | - |
+| typing-inspection | MIT | - |
+| urllib3 | MIT | - |
+| uvicorn | BSD-3-Clause | - |
+| websockets | BSD | - |
+
+---
+
+## License Summary
+
+- **MIT License**: Most permissive, requires copyright notice preservation
+- **BSD License**: Similar to MIT, requires copyright notice preservation
+- **Apache-2.0**: Includes patent grant, requires copyright/license notice
+- **LGPL**: Library/linking exception, no copyleft for this project
+- **MPL 2.0**: File-level copyleft, does not affect this project
+- **ISC License**: Simplified BSD-like license
+- **Unlicense**: Public domain dedication
+- **PSF-2.0**: Python Software Foundation License
+
+All licenses are compatible with Apache-2.0, allowing this project to be
+distributed under the Apache License, Version 2.0.

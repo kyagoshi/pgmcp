@@ -223,3 +223,20 @@ PGHOST=localhost PGPORT=5433 PGDATABASE=testdb PGUSER=testuser PGPASSWORD=testpa
 ```bash
 uv run fastmcp dev server.py
 ```
+
+## ライセンス
+
+このプロジェクトは [Apache License 2.0](LICENSE) の下でライセンスされています。
+
+### 依存ライブラリのライセンス
+
+このプロジェクトは以下の主要なライブラリに依存しています：
+
+| ライブラリ | ライセンス |
+|-----------|-----------|
+| [fastmcp](https://github.com/jlowin/fastmcp) | Apache-2.0 |
+| [psycopg2](https://www.psycopg.org/) | LGPL |
+| [pydantic](https://docs.pydantic.dev/) | MIT |
+| [uvicorn](https://www.uvicorn.org/) | BSD-3-Clause |
+
+すべての依存ライブラリのライセンス情報は [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES) を参照してください。
