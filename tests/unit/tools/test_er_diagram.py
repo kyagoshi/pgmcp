@@ -396,6 +396,7 @@ class TestFormatMermaidErDiagram:
         result = _format_mermaid_er_diagram(tables_info, [], virtual_fks)
 
         assert 'users ||..o{ logs : "references"' in result
+        assert "integer user_id FK" in result
 
     def test_format_empty_tables(self) -> None:
         """テーブルが空の場合"""

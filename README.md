@@ -201,6 +201,15 @@ erDiagram
   - `_id` または `_no` サフィックスを持つカラム
   - 他のテーブルの主キー名と一致するカラム
 
+### テスト用サンプルデータ
+
+リポジトリ同梱の `docker/init.sql` は Virtual FK を含む多様なテーブルを用意しています。
+
+- シンプルな例: `vfk_uuid_parent`/`vfk_uuid_child`, `vfk_no_parent`/`vfk_no_child`
+- 複雑な例（20個超のテーブル）: `vfk_uuid_*` 系と `vfk_no_*` 系（注文・在庫・キャンペーン・ロイヤルティなど）
+
+再投入する場合は `docker compose down -v && docker compose up -d` でDBを初期化してください。
+
 ## 開発
 
 開発者向けの情報は [CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。

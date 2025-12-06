@@ -310,6 +310,11 @@ def _format_mermaid_er_diagram(
 
     lines = ["erDiagram"]
 
+    # Virtual FK対象カラムを特定（FKマーカー付与用）
+    virtual_fk_columns = {
+        (vfk["from_table"], vfk["from_column"]) for vfk in virtual_fks
+    }
+
     # テーブル定義を出力
     for table in sorted(tables_info, key=lambda t: t["table_name"]):
         table_name = table["table_name"]
@@ -319,7 +324,10 @@ def _format_mermaid_er_diagram(
             markers = []
             if col["is_primary_key"]:
                 markers.append("PK")
-            if col["is_foreign_key"]:
+            if (
+                col["is_foreign_key"]
+                or (table_name, col["column_name"]) in virtual_fk_columns
+            ):
                 markers.append("FK")
             marker_str = " " + ",".join(markers) if markers else ""
             comment = f' "{col["comment"]}"' if col["comment"] else ""

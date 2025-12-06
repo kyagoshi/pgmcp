@@ -228,6 +228,219 @@ CREATE TABLE cascade_set_null (
     value TEXT
 );
 
+-- Virtual Foreign Key (UUID PK with *_id)
+CREATE TABLE vfk_uuid_parent (
+    vfk_uuid_parent_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(100)
+);
+
+CREATE TABLE vfk_uuid_child (
+    id SERIAL PRIMARY KEY,
+    vfk_uuid_parent_id UUID,
+    note TEXT
+);
+
+-- Virtual Foreign Key (BIGINT PK with *_no)
+CREATE TABLE vfk_no_parent (
+    vfk_no_parent_no BIGINT PRIMARY KEY,
+    name VARCHAR(100)
+);
+
+CREATE TABLE vfk_no_child (
+    id SERIAL PRIMARY KEY,
+    vfk_no_parent_no BIGINT,
+    note TEXT
+);
+
+-- より複雑な Virtual Foreign Keys（UUID系）
+CREATE TABLE vfk_uuid_customer (
+    vfk_uuid_customer_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(100)
+);
+
+CREATE TABLE vfk_uuid_address (
+    vfk_uuid_address_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    vfk_uuid_customer_id UUID,
+    city VARCHAR(100)
+);
+
+CREATE TABLE vfk_uuid_order (
+    vfk_uuid_order_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    vfk_uuid_customer_id UUID,
+    vfk_uuid_address_id UUID,
+    total_amount NUMERIC(10,2)
+);
+
+CREATE TABLE vfk_uuid_order_item (
+    vfk_uuid_order_item_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    vfk_uuid_order_id UUID,
+    vfk_uuid_product_id UUID,
+    quantity INTEGER
+);
+
+CREATE TABLE vfk_uuid_product (
+    vfk_uuid_product_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    vfk_uuid_category_id UUID,
+    name VARCHAR(100)
+);
+
+CREATE TABLE vfk_uuid_category (
+    vfk_uuid_category_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    parent_id UUID,
+    name VARCHAR(100)
+);
+
+CREATE TABLE vfk_uuid_invoice (
+    vfk_uuid_invoice_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    vfk_uuid_order_id UUID,
+    amount NUMERIC(10,2)
+);
+
+CREATE TABLE vfk_uuid_payment (
+    vfk_uuid_payment_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    vfk_uuid_invoice_id UUID,
+    vfk_uuid_payment_method_id UUID,
+    status VARCHAR(50)
+);
+
+CREATE TABLE vfk_uuid_payment_method (
+    vfk_uuid_payment_method_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    method_name VARCHAR(50)
+);
+
+CREATE TABLE vfk_uuid_shipment (
+    vfk_uuid_shipment_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    vfk_uuid_order_id UUID,
+    vfk_uuid_warehouse_id UUID,
+    tracking_code VARCHAR(50)
+);
+
+CREATE TABLE vfk_uuid_warehouse (
+    vfk_uuid_warehouse_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    vfk_uuid_region_id UUID,
+    name VARCHAR(100)
+);
+
+CREATE TABLE vfk_uuid_region (
+    vfk_uuid_region_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(100)
+);
+
+CREATE TABLE vfk_uuid_shipment_event (
+    vfk_uuid_shipment_event_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    vfk_uuid_shipment_id UUID,
+    event_type VARCHAR(50)
+);
+
+CREATE TABLE vfk_uuid_return_request (
+    vfk_uuid_return_request_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    vfk_uuid_order_id UUID,
+    reason_id UUID,
+    status VARCHAR(50)
+);
+
+CREATE TABLE vfk_uuid_return_reason (
+    vfk_uuid_return_reason_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    description TEXT
+);
+
+CREATE TABLE vfk_uuid_loyalty_account (
+    vfk_uuid_loyalty_account_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    vfk_uuid_customer_id UUID,
+    points INTEGER DEFAULT 0
+);
+
+CREATE TABLE vfk_uuid_loyalty_activity (
+    vfk_uuid_loyalty_activity_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    vfk_uuid_loyalty_account_id UUID,
+    vfk_uuid_order_id UUID,
+    delta_points INTEGER
+);
+
+CREATE TABLE vfk_uuid_marketing_campaign (
+    vfk_uuid_marketing_campaign_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(100)
+);
+
+CREATE TABLE vfk_uuid_campaign_enrollment (
+    vfk_uuid_campaign_enrollment_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    vfk_uuid_customer_id UUID,
+    vfk_uuid_marketing_campaign_id UUID
+);
+
+CREATE TABLE vfk_uuid_coupon (
+    vfk_uuid_coupon_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    vfk_uuid_marketing_campaign_id UUID,
+    code VARCHAR(50)
+);
+
+CREATE TABLE vfk_uuid_coupon_redemption (
+    vfk_uuid_coupon_redemption_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    vfk_uuid_coupon_id UUID,
+    vfk_uuid_order_id UUID,
+    vfk_uuid_customer_id UUID
+);
+
+-- より複雑な Virtual Foreign Keys（BIGINT系）
+CREATE TABLE vfk_no_customer (
+    vfk_no_customer_no BIGINT PRIMARY KEY,
+    name VARCHAR(100)
+);
+
+CREATE TABLE vfk_no_order (
+    vfk_no_order_no BIGINT PRIMARY KEY,
+    vfk_no_customer_no BIGINT,
+    total_amount NUMERIC(10,2)
+);
+
+CREATE TABLE vfk_no_order_item (
+    vfk_no_order_item_no BIGINT PRIMARY KEY,
+    vfk_no_order_no BIGINT,
+    vfk_no_product_no BIGINT,
+    quantity INTEGER
+);
+
+CREATE TABLE vfk_no_product (
+    vfk_no_product_no BIGINT PRIMARY KEY,
+    vfk_no_category_no BIGINT,
+    name VARCHAR(100)
+);
+
+CREATE TABLE vfk_no_category (
+    vfk_no_category_no BIGINT PRIMARY KEY,
+    parent_no BIGINT,
+    name VARCHAR(100)
+);
+
+CREATE TABLE vfk_no_supplier (
+    vfk_no_supplier_no BIGINT PRIMARY KEY,
+    name VARCHAR(100)
+);
+
+CREATE TABLE vfk_no_supplier_product (
+    vfk_no_supplier_product_no BIGINT PRIMARY KEY,
+    vfk_no_supplier_no BIGINT,
+    vfk_no_product_no BIGINT
+);
+
+CREATE TABLE vfk_no_warehouse (
+    vfk_no_warehouse_no BIGINT PRIMARY KEY,
+    vfk_no_region_no BIGINT,
+    name VARCHAR(100)
+);
+
+CREATE TABLE vfk_no_region (
+    vfk_no_region_no BIGINT PRIMARY KEY,
+    name VARCHAR(100)
+);
+
+CREATE TABLE vfk_no_inventory (
+    vfk_no_inventory_no BIGINT PRIMARY KEY,
+    vfk_no_product_no BIGINT,
+    vfk_no_warehouse_no BIGINT,
+    quantity INTEGER
+);
+
 -- =============================================================================
 -- その他
 -- =============================================================================
@@ -371,6 +584,93 @@ INSERT INTO self_reference_test (name, parent_id) VALUES
 INSERT INTO cascade_parent (name) VALUES ('Parent 1'), ('Parent 2');
 INSERT INTO cascade_child (parent_id, value) VALUES (1, 'Child of Parent 1');
 INSERT INTO cascade_set_null (parent_id, value) VALUES (1, 'Child with set null');
+
+-- Virtual Foreign Key テストデータ
+INSERT INTO vfk_uuid_parent (name) VALUES ('VFK UUID Parent A'), ('VFK UUID Parent B');
+INSERT INTO vfk_uuid_child (vfk_uuid_parent_id, note)
+SELECT vfk_uuid_parent_id, 'Child for ' || name FROM vfk_uuid_parent;
+
+INSERT INTO vfk_no_parent (vfk_no_parent_no, name) VALUES (1001, 'VFK NO Parent A'), (1002, 'VFK NO Parent B');
+INSERT INTO vfk_no_child (vfk_no_parent_no, note) VALUES (1001, 'Child for parent 1001'), (1002, 'Child for parent 1002');
+
+-- 複雑な Virtual Foreign Keys（UUID系）テストデータ
+INSERT INTO vfk_uuid_customer (name) VALUES ('C-1'), ('C-2');
+INSERT INTO vfk_uuid_address (vfk_uuid_customer_id, city)
+SELECT vfk_uuid_customer_id, 'City-' || name FROM vfk_uuid_customer;
+
+INSERT INTO vfk_uuid_order (vfk_uuid_customer_id, vfk_uuid_address_id, total_amount)
+SELECT c.vfk_uuid_customer_id, a.vfk_uuid_address_id, 120.50
+FROM vfk_uuid_customer c
+JOIN vfk_uuid_address a ON a.vfk_uuid_customer_id = c.vfk_uuid_customer_id
+LIMIT 2;
+
+INSERT INTO vfk_uuid_product (vfk_uuid_category_id, name) VALUES (NULL, 'P-1'), (NULL, 'P-2');
+INSERT INTO vfk_uuid_category (parent_id, name) VALUES (NULL, 'Cat-Root'), (NULL, 'Cat-Leaf');
+UPDATE vfk_uuid_product SET vfk_uuid_category_id = (SELECT vfk_uuid_category_id FROM vfk_uuid_category LIMIT 1);
+
+INSERT INTO vfk_uuid_order_item (vfk_uuid_order_id, vfk_uuid_product_id, quantity)
+SELECT o.vfk_uuid_order_id, p.vfk_uuid_product_id, 2
+FROM vfk_uuid_order o CROSS JOIN LATERAL (
+    SELECT vfk_uuid_product_id FROM vfk_uuid_product LIMIT 1
+) p
+LIMIT 2;
+
+INSERT INTO vfk_uuid_invoice (vfk_uuid_order_id, amount)
+SELECT vfk_uuid_order_id, 120.50 FROM vfk_uuid_order;
+
+INSERT INTO vfk_uuid_payment_method (method_name) VALUES ('card'), ('bank');
+INSERT INTO vfk_uuid_payment (vfk_uuid_invoice_id, vfk_uuid_payment_method_id, status)
+SELECT i.vfk_uuid_invoice_id, pm.vfk_uuid_payment_method_id, 'pending'
+FROM vfk_uuid_invoice i
+CROSS JOIN LATERAL (
+    SELECT vfk_uuid_payment_method_id FROM vfk_uuid_payment_method LIMIT 1
+) pm;
+
+INSERT INTO vfk_uuid_region (name) VALUES ('North'), ('South');
+INSERT INTO vfk_uuid_warehouse (vfk_uuid_region_id, name)
+SELECT vfk_uuid_region_id, 'WH-' || name FROM vfk_uuid_region;
+INSERT INTO vfk_uuid_shipment (vfk_uuid_order_id, vfk_uuid_warehouse_id, tracking_code)
+SELECT o.vfk_uuid_order_id, w.vfk_uuid_warehouse_id, 'TRK-' || substring(o.vfk_uuid_order_id::text, 1, 8)
+FROM vfk_uuid_order o
+JOIN vfk_uuid_warehouse w ON TRUE
+LIMIT 2;
+INSERT INTO vfk_uuid_shipment_event (vfk_uuid_shipment_id, event_type)
+SELECT vfk_uuid_shipment_id, 'created' FROM vfk_uuid_shipment;
+
+INSERT INTO vfk_uuid_marketing_campaign (name) VALUES ('Winter'), ('Spring');
+INSERT INTO vfk_uuid_coupon (vfk_uuid_marketing_campaign_id, code)
+SELECT vfk_uuid_marketing_campaign_id, 'CP-' || substring(vfk_uuid_marketing_campaign_id::text, 1, 6)
+FROM vfk_uuid_marketing_campaign;
+INSERT INTO vfk_uuid_coupon_redemption (vfk_uuid_coupon_id, vfk_uuid_order_id, vfk_uuid_customer_id)
+SELECT cpn.vfk_uuid_coupon_id, ord.vfk_uuid_order_id, ord.vfk_uuid_customer_id
+FROM vfk_uuid_coupon cpn
+JOIN vfk_uuid_order ord ON TRUE
+LIMIT 2;
+
+INSERT INTO vfk_uuid_loyalty_account (vfk_uuid_customer_id, points)
+SELECT vfk_uuid_customer_id, 100 FROM vfk_uuid_customer;
+INSERT INTO vfk_uuid_loyalty_activity (vfk_uuid_loyalty_account_id, vfk_uuid_order_id, delta_points)
+SELECT la.vfk_uuid_loyalty_account_id, o.vfk_uuid_order_id, 10
+FROM vfk_uuid_loyalty_account la
+JOIN vfk_uuid_order o ON la.vfk_uuid_customer_id = o.vfk_uuid_customer_id;
+
+INSERT INTO vfk_uuid_campaign_enrollment (vfk_uuid_customer_id, vfk_uuid_marketing_campaign_id)
+SELECT vfk_uuid_customer_id, vfk_uuid_marketing_campaign_id FROM vfk_uuid_customer, vfk_uuid_marketing_campaign LIMIT 2;
+
+-- 複雑な Virtual Foreign Keys（BIGINT系）テストデータ
+INSERT INTO vfk_no_region (vfk_no_region_no, name) VALUES (2001, 'R-North'), (2002, 'R-South');
+INSERT INTO vfk_no_warehouse (vfk_no_warehouse_no, vfk_no_region_no, name) VALUES (3001, 2001, 'W-North'), (3002, 2002, 'W-South');
+INSERT INTO vfk_no_category (vfk_no_category_no, parent_no, name) VALUES (4001, NULL, 'Electronics'), (4002, 4001, 'Mobile');
+INSERT INTO vfk_no_product (vfk_no_product_no, vfk_no_category_no, name) VALUES (5001, 4002, 'Phone'), (5002, 4001, 'Laptop');
+INSERT INTO vfk_no_customer (vfk_no_customer_no, name) VALUES (6001, 'Customer-A'), (6002, 'Customer-B');
+INSERT INTO vfk_no_order (vfk_no_order_no, vfk_no_customer_no, total_amount) VALUES (7001, 6001, 999.99), (7002, 6002, 199.99);
+INSERT INTO vfk_no_order_item (vfk_no_order_item_no, vfk_no_order_no, vfk_no_product_no, quantity) VALUES
+    (8001, 7001, 5001, 1),
+    (8002, 7001, 5002, 1),
+    (8003, 7002, 5002, 2);
+INSERT INTO vfk_no_supplier (vfk_no_supplier_no, name) VALUES (9001, 'Supplier-A');
+INSERT INTO vfk_no_supplier_product (vfk_no_supplier_product_no, vfk_no_supplier_no, vfk_no_product_no) VALUES (9101, 9001, 5001);
+INSERT INTO vfk_no_inventory (vfk_no_inventory_no, vfk_no_product_no, vfk_no_warehouse_no, quantity) VALUES (9201, 5001, 3001, 50), (9202, 5002, 3002, 30);
 
 -- 大量カラムテスト
 INSERT INTO many_columns_test (

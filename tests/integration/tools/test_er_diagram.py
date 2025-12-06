@@ -265,6 +265,89 @@ class TestGenerateErDiagramIntegration:
         # 実際のFKまたはVirtual FKとして関係が表現される
         assert "||--o{" in result or "||..o{" in result
 
+    def test_generate_er_diagram_virtual_foreign_keys_uuid_pk(
+        self, db_connection: bool
+    ) -> None:
+        """UUID型PKと *_id カラムによるVirtual FKの検出"""
+        result = generate_er_diagram_impl(
+            schema="public",
+            tables=["vfk_uuid_parent", "vfk_uuid_child"],
+        )
+
+        assert "vfk_uuid_parent {" in result
+        assert "vfk_uuid_child {" in result
+        assert 'vfk_uuid_parent ||..o{ vfk_uuid_child : "references"' in result
+        # 親はPKのみ、子の参照カラムにFKマーカー
+        assert "uuid vfk_uuid_parent_id PK" in result
+        assert "uuid vfk_uuid_parent_id FK" in result
+        assert "uuid vfk_uuid_parent_id PK,FK" not in result
+
+    def test_generate_er_diagram_virtual_foreign_keys_no_pk(
+        self, db_connection: bool
+    ) -> None:
+        """BIGINT型PKと *_no カラムによるVirtual FKの検出"""
+        result = generate_er_diagram_impl(
+            schema="public",
+            tables=["vfk_no_parent", "vfk_no_child"],
+        )
+
+        assert "vfk_no_parent {" in result
+        assert "vfk_no_child {" in result
+        assert 'vfk_no_parent ||..o{ vfk_no_child : "references"' in result
+        assert "bigint vfk_no_parent_no PK" in result
+        # 子テーブルの参照カラムにFKマーカーが付く
+        assert "bigint vfk_no_parent_no FK" in result
+
+    def test_generate_er_diagram_virtual_foreign_keys_complex(
+        self, db_connection: bool
+    ) -> None:
+        """20個超のテーブルを含む複雑なVirtual FKシナリオ"""
+        tables = [
+            "vfk_uuid_customer",
+            "vfk_uuid_address",
+            "vfk_uuid_order",
+            "vfk_uuid_order_item",
+            "vfk_uuid_product",
+            "vfk_uuid_category",
+            "vfk_uuid_invoice",
+            "vfk_uuid_payment",
+            "vfk_uuid_payment_method",
+            "vfk_uuid_shipment",
+            "vfk_uuid_warehouse",
+            "vfk_uuid_region",
+            "vfk_uuid_shipment_event",
+            "vfk_uuid_return_request",
+            "vfk_uuid_return_reason",
+            "vfk_uuid_loyalty_account",
+            "vfk_uuid_loyalty_activity",
+            "vfk_uuid_marketing_campaign",
+            "vfk_uuid_campaign_enrollment",
+            "vfk_uuid_coupon",
+            "vfk_uuid_coupon_redemption",
+            "vfk_no_customer",
+            "vfk_no_order",
+            "vfk_no_order_item",
+            "vfk_no_product",
+            "vfk_no_category",
+            "vfk_no_supplier",
+            "vfk_no_supplier_product",
+            "vfk_no_warehouse",
+            "vfk_no_region",
+            "vfk_no_inventory",
+        ]
+
+        result = generate_er_diagram_impl(schema="public", tables=tables)
+
+        assert "erDiagram" in result
+        assert "vfk_uuid_customer {" in result and "vfk_no_customer {" in result
+        # 代表的なVirtual FKが検出されていることを確認
+        assert 'vfk_uuid_customer ||..o{ vfk_uuid_order : "references"' in result
+        assert 'vfk_uuid_order ||..o{ vfk_uuid_order_item : "references"' in result
+        assert 'vfk_uuid_order ||..o{ vfk_uuid_invoice : "references"' in result
+        assert 'vfk_uuid_invoice ||..o{ vfk_uuid_payment : "references"' in result
+        assert 'vfk_no_customer ||..o{ vfk_no_order : "references"' in result
+        assert 'vfk_no_order ||..o{ vfk_no_order_item : "references"' in result
+
 
 class TestMermaidSyntaxValidation:
     """Mermaid構文の検証テスト（Mermaid CLIが必要）"""
