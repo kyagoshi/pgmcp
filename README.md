@@ -2,6 +2,7 @@
 
 [![Tests](https://github.com/kyagoshi/pgmcp/actions/workflows/test.yml/badge.svg)](https://github.com/kyagoshi/pgmcp/actions/workflows/test.yml)
 
+
 PostgreSQLデータベースのテーブル情報を取得するMCPサーバーです。
 
 ## 機能
@@ -61,6 +62,8 @@ uv sync
 ```
 
 ### VS Code (GitHub Copilot)
+
+[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_pgmcp-0098FF?style=flat&logo=visualstudiocode&logoColor=ffffff)](vscode:mcp/install?%7B%22name%22%3A%22pgmcp%22%2C%22type%22%3A%22stdio%22%2C%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22--from%22%2C%22git%2Bhttps%3A%2F%2Fgithub.com%2Fkyagoshi%2Fpgmcp%22%2C%22pgmcp%22%5D%2C%22env%22%3A%7B%22PGHOST%22%3A%22localhost%22%2C%22PGPORT%22%3A%225432%22%2C%22PGDATABASE%22%3A%22your_db_name%22%2C%22PGUSER%22%3A%22your_postgres_username%22%2C%22PGPASSWORD%22%3A%22your_postgres_username%22%7D%7D)
 
 `.vscode/mcp.json` に以下を追加:
 
