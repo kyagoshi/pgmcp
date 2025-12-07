@@ -29,12 +29,24 @@ PostgreSQLデータベースのテーブル情報を取得するMCPサーバー�
 uvx --from git+https://github.com/kyagoshi/pgmcp pgmcp
 ```
 
+特定バージョンを固定したい場合は `@<タグ>` を指定してください（例: `v0.1.0`）:
+
+```bash
+uvx --from git+https://github.com/kyagoshi/pgmcp@v0.1.0 pgmcp
+```
+
 ### ローカルインストール
 
 ```bash
 git clone https://github.com/kyagoshi/pgmcp.git
 cd pgmcp
 uv sync
+```
+
+`pip` を使う場合のバージョン固定例:
+
+```bash
+pip install "git+https://github.com/kyagoshi/pgmcp@v0.1.0"
 ```
 
 ## MCP設定

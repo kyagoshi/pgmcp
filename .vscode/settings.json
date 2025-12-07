@@ -3,5 +3,16 @@
         "tests"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+      "text": "必ず日本語で記述してください"
+    },
+    {
+      "text": "コミットメッセージは、1行目にConventional Commitsに則って記述してください"
+    },
+    {
+      "text": "3行目以降にファイルごとの詳細な変更内容を記述してください"
+    }
+  ]
 }
