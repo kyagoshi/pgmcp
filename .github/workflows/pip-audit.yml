@@ -26,12 +26,16 @@ jobs:
         run: uv export --format requirements.txt --locked --no-hashes --quiet > requirements.txt
 
       - name: Run pip-audit (JSON)
+        # CVE-2025-66416 (mcp 1.22.0 DNS rebinding) は fastmcp が mcp>=1.23.0 を
+        # サポートするまで一時的に除外。fastmcp 2.14 で解消予定。
+        # 参照: https://github.com/jlowin/fastmcp/releases/tag/v2.13.3
         run: |
           set +e
           uvx --from pip-audit==2.10.0 pip-audit \
             --progress-spinner=off \
             --requirement requirements.txt \
             --vulnerability-service osv \
+            --ignore-vuln GHSA-wpm5-9r59-v7v2 \
             --format json > pip-audit.json
           status=$?
           if [ "$status" -gt 1 ]; then

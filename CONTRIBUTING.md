@@ -101,7 +101,15 @@ uv run pre-commit run --all-files
 
 - `.github/workflows/pip-audit.yml` で Pull Request と週次（月曜 03:00 UTC）に `pip-audit` を実行します。
 - High/Critical もしくは重大度不明の脆弱性を検出した場合にジョブを失敗扱いにします。
-- ローカルでの実行例（uv 前提）:
+- 重大度が付与されていない脆弱性は安全側に倒し、失敗として扱います。
+
+### 一時的に除外している脆弱性
+
+| CVE ID | パッケージ | 理由 | 解除条件 |
+|--------|-----------|------|----------|
+| CVE-2025-66416 (GHSA-wpm5-9r59-v7v2) | mcp | fastmcp 2.13.3 が mcp<1.23 を要求しているため、脆弱性が修正された mcp>=1.23.0 にアップグレードできない | fastmcp 2.14 がリリースされ mcp>=1.23.0 をサポートしたら除外を解除する |
+
+### ローカルでの実行例
 
 ```bash
 uv export --format requirements.txt --locked --no-hashes --quiet > requirements.txt
@@ -113,8 +121,6 @@ uvx --from pip-audit==2.10.0 pip-audit \
 uv run python scripts/pip_audit_gate.py --input pip-audit.json --summary pip-audit-summary.txt
 cat pip-audit-summary.txt
 ```
-
-- 重大度が付与されていない脆弱性は安全側に倒し、失敗として扱います。
 
 ## ローカル開発
 
