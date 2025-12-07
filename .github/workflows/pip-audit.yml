@@ -1,0 +1,68 @@
+name: Security Audit (pip-audit)
+
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+jobs:
+  pip-audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Export locked requirements
+        run: uv export --format requirements.txt --locked --no-hashes --quiet > requirements.txt
+
+      - name: Run pip-audit (JSON)
+        # 一時除外する脆弱性は .pip-audit-ignore.json で管理
+        run: |
+          set +e
+          # Build --ignore-vuln args from .pip-audit-ignore.json
+          IGNORE_ARGS=""
+          if [ -f .pip-audit-ignore.json ]; then
+            IGNORE_ARGS=$(python3 -c "import json; data = json.load(open('.pip-audit-ignore.json')); print(' '.join(f'--ignore-vuln {v}' for v in data.get('ignored_vulnerabilities', [])))")
+          fi
+          uvx --from pip-audit==2.10.0 pip-audit \
+            --progress-spinner=off \
+            --requirement requirements.txt \
+            --vulnerability-service osv \
+            $IGNORE_ARGS \
+            --format json > pip-audit.json
+          status=$?
+          if [ "$status" -gt 1 ]; then
+            echo "pip-audit failed (exit $status)." >&2
+            exit "$status"
+          fi
+          exit 0
+
+      - name: Fail on High/Critical (or unknown)
+        # 一時除外する脆弱性は .pip-audit-ignore.json で管理
+        run: |
+          uv run python scripts/pip_audit_gate.py \
+            --input pip-audit.json \
+            --summary pip-audit-summary.txt \
+            --ignore-file .pip-audit-ignore.json
+
+      - name: Write audit summary
+        if: always()
+        run: |
+          {
+            echo "## pip-audit (High/Critical gate)";
+            if [ -f pip-audit-summary.txt ]; then
+              cat pip-audit-summary.txt;
+            else
+              echo "pip-audit summary not found.";
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
