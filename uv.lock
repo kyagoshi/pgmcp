@@ -1028,12 +1028,12 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "fastmcp" },
-    { name = "licensecheck" },
     { name = "psycopg2-binary" },
 ]
 
 [package.optional-dependencies]
 dev = [
+    { name = "licensecheck" },
     { name = "mypy" },
     { name = "pre-commit" },
     { name = "pytest" },
@@ -1046,7 +1046,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "fastmcp", specifier = ">=2.0.0" },
-    { name = "licensecheck", specifier = ">=2025.1.0" },
+    { name = "licensecheck", marker = "extra == 'dev'", specifier = ">=2025.1.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.13.0" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=4.0.0" },
     { name = "psycopg2-binary", specifier = ">=2.9.0" },

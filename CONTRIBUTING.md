@@ -97,6 +97,25 @@ uv run pre-commit install
 uv run pre-commit run --all-files
 ```
 
+## セキュリティスキャン (pip-audit)
+
+- `.github/workflows/pip-audit.yml` で Pull Request と週次（月曜 03:00 UTC）に `pip-audit` を実行します。
+- High/Critical もしくは重大度不明の脆弱性を検出した場合にジョブを失敗扱いにします。
+- ローカルでの実行例（uv 前提）:
+
+```bash
+uv export --format requirements --locked --no-hashes --quiet > requirements.txt
+uvx --from pip-audit==2.10.0 pip-audit \
+  --progress-spinner=off \
+  --requirement requirements.txt \
+  --vulnerability-service osv \
+  --format json > pip-audit.json
+uv run python scripts/pip_audit_gate.py --input pip-audit.json --summary pip-audit-summary.txt
+cat pip-audit-summary.txt
+```
+
+- 重大度が付与されていない脆弱性は安全側に倒し、失敗として扱います。
+
 ## ローカル開発
 
 ### サーバーの実行
