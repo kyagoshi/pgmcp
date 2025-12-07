@@ -140,7 +140,9 @@ pgmcp/
 新しい依存関係を追加する際は、ライセンスの互換性を確認してください。
 
 ```bash
-# licensecheck をインストール
+# licensecheck をインストール（dev 依存に含まれます）
+uv sync --extra dev
+# または個別に導入する場合
 uv pip install licensecheck
 
 # ライセンスチェックを実行
