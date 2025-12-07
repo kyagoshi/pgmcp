@@ -104,7 +104,7 @@ uv run pre-commit run --all-files
 - ローカルでの実行例（uv 前提）:
 
 ```bash
-uv export --format requirements --locked --no-hashes --quiet > requirements.txt
+uv export --format requirements.txt --locked --no-hashes --quiet > requirements.txt
 uvx --from pip-audit==2.10.0 pip-audit \
   --progress-spinner=off \
   --requirement requirements.txt \
