@@ -19,11 +19,49 @@ _module = importlib.util.module_from_spec(_spec)
 sys.modules["pip_audit_gate"] = _module
 _spec.loader.exec_module(_module)
 
-from pip_audit_gate import (  # type: ignore[import-not-found]  # noqa: E402
+from pip_audit_gate import (  # noqa: E402
     load_findings,
+    load_ignored_vulns,
     main,
     write_summary,
 )
+
+
+class TestLoadIgnoredVulns:
+    """Tests for load_ignored_vulns function."""
+
+    def test_load_from_valid_file(self, tmp_path: Path) -> None:
+        ignore_file = tmp_path / ".pip-audit-ignore.json"
+        ignore_file.write_text('{"ignored_vulnerabilities": ["CVE-111", "GHSA-abc"]}')
+        result = load_ignored_vulns(ignore_file)
+        assert result == {"CVE-111", "GHSA-abc"}
+
+    def test_load_from_empty_list(self, tmp_path: Path) -> None:
+        ignore_file = tmp_path / ".pip-audit-ignore.json"
+        ignore_file.write_text('{"ignored_vulnerabilities": []}')
+        result = load_ignored_vulns(ignore_file)
+        assert result == set()
+
+    def test_load_from_missing_key(self, tmp_path: Path) -> None:
+        ignore_file = tmp_path / ".pip-audit-ignore.json"
+        ignore_file.write_text('{"other_key": "value"}')
+        result = load_ignored_vulns(ignore_file)
+        assert result == set()
+
+    def test_load_from_nonexistent_file(self, tmp_path: Path) -> None:
+        ignore_file = tmp_path / "nonexistent.json"
+        result = load_ignored_vulns(ignore_file)
+        assert result == set()
+
+    def test_load_from_none(self) -> None:
+        result = load_ignored_vulns(None)
+        assert result == set()
+
+    def test_load_from_invalid_json(self, tmp_path: Path) -> None:
+        ignore_file = tmp_path / ".pip-audit-ignore.json"
+        ignore_file.write_text("not valid json")
+        result = load_ignored_vulns(ignore_file)
+        assert result == set()
 
 
 class TestLoadFindings:
@@ -81,11 +119,55 @@ class TestLoadFindings:
             {
                 "name": "pkg",
                 "version": "1.0",
-                "vulns": [{"severity": "high", "aliases": ["GHSA-abc", "CVE-222"]}],
+                "vulns": [
+                    {"severity": "high", "id": "CVE-222", "aliases": ["GHSA-abc"]}
+                ],
             }
         ]
         findings = load_findings(data)
-        assert findings == [("high", "pkg", "1.0", "GHSA-abc")]
+        assert findings == [("high", "pkg", "1.0", "CVE-222")]
+
+    def test_load_findings_ignores_vuln_by_id(self) -> None:
+        data = [
+            {
+                "name": "pkg",
+                "version": "1.0",
+                "vulns": [
+                    {"severity": "high", "id": "CVE-111"},
+                    {"severity": "critical", "id": "CVE-222"},
+                ],
+            }
+        ]
+        findings = load_findings(data, ignored_vulns={"CVE-111"})
+        assert findings == [("critical", "pkg", "1.0", "CVE-222")]
+
+    def test_load_findings_ignores_vuln_by_alias(self) -> None:
+        data = [
+            {
+                "name": "pkg",
+                "version": "1.0",
+                "vulns": [
+                    {"severity": "high", "id": "CVE-123", "aliases": ["GHSA-abc"]},
+                ],
+            }
+        ]
+        findings = load_findings(data, ignored_vulns={"GHSA-abc"})
+        assert findings == []
+
+    def test_load_findings_ignores_multiple_vulns(self) -> None:
+        data = [
+            {
+                "name": "pkg",
+                "version": "1.0",
+                "vulns": [
+                    {"severity": "high", "id": "CVE-111"},
+                    {"severity": "critical", "id": "CVE-222"},
+                    {"severity": "medium", "id": "CVE-333"},
+                ],
+            }
+        ]
+        findings = load_findings(data, ignored_vulns={"CVE-111", "CVE-333"})
+        assert findings == [("critical", "pkg", "1.0", "CVE-222")]
 
     def test_load_findings_empty_dependencies(self) -> None:
         data: dict[str, Any] = {"dependencies": []}

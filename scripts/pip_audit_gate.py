@@ -3,6 +3,14 @@
 Usage (example):
     uv run python scripts/pip_audit_gate.py --input pip-audit.json --summary pip-audit-summary.txt
 
+    # With ignore file (recommended):
+    uv run python scripts/pip_audit_gate.py --input pip-audit.json --summary pip-audit-summary.txt \
+        --ignore-file .pip-audit-ignore.json
+
+    # With inline ignore (can be combined with --ignore-file):
+    uv run python scripts/pip_audit_gate.py --input pip-audit.json --summary pip-audit-summary.txt \
+        --ignore-vuln CVE-2025-66416
+
 This script is used by CI to parse pip-audit JSON output and enforce severity thresholds.
 """
 
@@ -16,11 +24,32 @@ from pathlib import Path
 SeverityFinding = tuple[str, str, str, str]
 
 
-def load_findings(data: object) -> list[SeverityFinding]:
+def load_ignored_vulns(ignore_file: Path | None) -> set[str]:
+    """Load ignored vulnerability IDs from a JSON config file.
+
+    Expected format:
+        {
+            "ignored_vulnerabilities": ["CVE-xxx", "GHSA-xxx"]
+        }
+    """
+    if ignore_file is None or not ignore_file.exists():
+        return set()
+    try:
+        data = json.loads(ignore_file.read_text())
+        return set(data.get("ignored_vulnerabilities", []))
+    except (json.JSONDecodeError, TypeError):
+        return set()
+
+
+def load_findings(
+    data: object, ignored_vulns: set[str] | None = None
+) -> list[SeverityFinding]:
     """Extract findings from pip-audit JSON output.
 
     Handles both dict and list layouts that pip-audit may emit.
+    Filters out vulnerabilities whose ID or aliases are in ignored_vulns.
     """
+    ignored = ignored_vulns or set()
 
     if isinstance(data, dict):
         dependencies = data.get("dependencies") or data.get("results") or []
@@ -36,8 +65,13 @@ def load_findings(data: object) -> list[SeverityFinding]:
             dep.get("version") or dep.get("dependency", {}).get("version") or "unknown"
         )
         for vuln in dep.get("vulns", []):
+            vuln_id = vuln.get("id") or ""
+            aliases = vuln.get("aliases", [])
+            # Skip if the vuln ID or any alias is in the ignored set
+            all_ids = {vuln_id} | set(aliases)
+            if all_ids & ignored:
+                continue
             severity = (vuln.get("severity") or "").lower()
-            vuln_id = vuln.get("id") or next(iter(vuln.get("aliases", [])), "")
             findings.append((severity, name, version, vuln_id))
     return findings
 
@@ -64,14 +98,30 @@ def main() -> int:
         type=Path,
         help="Path to write human-readable summary",
     )
+    parser.add_argument(
+        "--ignore-file",
+        type=Path,
+        dest="ignore_file",
+        help="Path to JSON file with ignored vulnerabilities (e.g., .pip-audit-ignore.json)",
+    )
+    parser.add_argument(
+        "--ignore-vuln",
+        action="append",
+        default=[],
+        dest="ignore_vulns",
+        metavar="ID",
+        help="Vulnerability ID (CVE or GHSA) to ignore. Can be specified multiple times.",
+    )
     args = parser.parse_args()
 
     if not args.input.exists():
         print("pip-audit output not found", flush=True)
         return 1
 
+    # Merge ignored vulns from file and CLI
+    ignored_vulns = load_ignored_vulns(args.ignore_file) | set(args.ignore_vulns)
     data = json.loads(args.input.read_text())
-    findings = load_findings(data)
+    findings = load_findings(data, ignored_vulns)
 
     write_summary(args.summary, findings)
 

@@ -105,6 +105,20 @@ uv run pre-commit run --all-files
 
 ### 一時的に除外している脆弱性
 
+除外する脆弱性は `.pip-audit-ignore.json` で一元管理しています。
+
+```json
+{
+  "_comment": "除外理由と解除条件を記載",
+  "ignored_vulnerabilities": [
+    "CVE-xxx",
+    "GHSA-xxx"
+  ]
+}
+```
+
+現在除外中:
+
 | CVE ID | パッケージ | 理由 | 解除条件 |
 |--------|-----------|------|----------|
 | CVE-2025-66416 (GHSA-wpm5-9r59-v7v2) | mcp | fastmcp 2.13.3 が mcp<1.23 を要求しているため、脆弱性が修正された mcp>=1.23.0 にアップグレードできない | fastmcp 2.14 がリリースされ mcp>=1.23.0 をサポートしたら除外を解除する |
@@ -118,7 +132,10 @@ uvx --from pip-audit==2.10.0 pip-audit \
   --requirement requirements.txt \
   --vulnerability-service osv \
   --format json > pip-audit.json
-uv run python scripts/pip_audit_gate.py --input pip-audit.json --summary pip-audit-summary.txt
+uv run python scripts/pip_audit_gate.py \
+  --input pip-audit.json \
+  --summary pip-audit-summary.txt \
+  --ignore-file .pip-audit-ignore.json
 cat pip-audit-summary.txt
 ```
 

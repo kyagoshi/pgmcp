@@ -26,16 +26,19 @@ jobs:
         run: uv export --format requirements.txt --locked --no-hashes --quiet > requirements.txt
 
       - name: Run pip-audit (JSON)
-        # CVE-2025-66416 (mcp 1.22.0 DNS rebinding) は fastmcp が mcp>=1.23.0 を
-        # サポートするまで一時的に除外。fastmcp 2.14 で解消予定。
-        # 参照: https://github.com/jlowin/fastmcp/releases/tag/v2.13.3
+        # 一時除外する脆弱性は .pip-audit-ignore.json で管理
         run: |
           set +e
+          # Build --ignore-vuln args from .pip-audit-ignore.json
+          IGNORE_ARGS=""
+          if [ -f .pip-audit-ignore.json ]; then
+            IGNORE_ARGS=$(python3 -c "import json; data = json.load(open('.pip-audit-ignore.json')); print(' '.join(f'--ignore-vuln {v}' for v in data.get('ignored_vulnerabilities', [])))")
+          fi
           uvx --from pip-audit==2.10.0 pip-audit \
             --progress-spinner=off \
             --requirement requirements.txt \
             --vulnerability-service osv \
-            --ignore-vuln GHSA-wpm5-9r59-v7v2 \
+            $IGNORE_ARGS \
             --format json > pip-audit.json
           status=$?
           if [ "$status" -gt 1 ]; then
@@ -45,10 +48,12 @@ jobs:
           exit 0
 
       - name: Fail on High/Critical (or unknown)
+        # 一時除外する脆弱性は .pip-audit-ignore.json で管理
         run: |
           uv run python scripts/pip_audit_gate.py \
             --input pip-audit.json \
-            --summary pip-audit-summary.txt
+            --summary pip-audit-summary.txt \
+            --ignore-file .pip-audit-ignore.json
 
       - name: Write audit summary
         if: always()

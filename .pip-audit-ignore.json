@@ -1,0 +1,7 @@
+{
+  "_comment": "fastmcp 2.14 で mcp>=1.23.0 がサポートされたら除外を解除する",
+  "ignored_vulnerabilities": [
+    "CVE-2025-66416",
+    "GHSA-wpm5-9r59-v7v2"
+  ]
+}
