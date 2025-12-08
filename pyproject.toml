@@ -66,6 +66,7 @@ select = [
 ]
 ignore = [
     "E501",   # line too long (handled by formatter)
+    "S101",   # assert usage in tests (pytest requirement)
 ]
 
 [tool.ruff.format]

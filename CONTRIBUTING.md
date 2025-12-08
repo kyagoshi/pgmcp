@@ -148,6 +148,8 @@ cat pip-audit-summary.txt
 PGHOST=localhost PGPORT=5433 PGDATABASE=testdb PGUSER=testuser PGPASSWORD=testpass uv run server.py
 ```
 
+**注意**: データベース接続は自動的にリードオンリーで確立されます（`psycopg2.connection.set_session(readonly=True)`）。書き込み系のクエリを実行すると `ReadOnlySqlTransaction` エラーが発生します。
+
 ### FastMCP開発サーバー
 
 FastMCPの開発サーバーを使用すると、ホットリロードやデバッグが容易になります。
