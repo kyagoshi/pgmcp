@@ -4,6 +4,7 @@ ER図生成ツール
 データベースのテーブル関係をMermaid形式のER図として出力
 """
 
+import re
 from typing import Any
 
 from pgmcp.connection import get_connection
@@ -240,6 +241,45 @@ def _detect_virtual_foreign_keys(
     return virtual_fks
 
 
+def _sanitize_identifier(identifier: str) -> str:
+    """
+    Mermaid ER図用に識別子をサニタイズ
+
+    特殊文字を含む識別子をMermaidが解析できる形式に変換します。
+    - 英数字とアンダースコア以外をアンダースコアに置換
+    - 先頭が数字の場合は `_` を前置
+    - 空または全て特殊文字の場合は "unnamed" を使用
+
+    Args:
+        identifier: テーブル名またはカラム名
+
+    Returns:
+        サニタイズされた識別子
+    """
+    if not identifier:
+        return "unnamed"
+
+    # 英数字とアンダースコア以外をアンダースコアに置換
+    # 非ASCII文字（日本語など）も置換対象
+    sanitized = re.sub(r"[^a-zA-Z0-9_]", "_", identifier)
+
+    # 連続するアンダースコアを1つに圧縮
+    sanitized = re.sub(r"_+", "_", sanitized)
+
+    # 先頭・末尾のアンダースコアを削除
+    sanitized = sanitized.strip("_")
+
+    # 空文字列になった場合
+    if not sanitized:
+        return "unnamed"
+
+    # 先頭が数字の場合、アンダースコアを前置
+    if sanitized[0].isdigit():
+        sanitized = "_" + sanitized
+
+    return sanitized
+
+
 def _simplify_data_type(data_type: str) -> str:
     """
     データ型を簡略化してMermaid ER図用に変換
@@ -318,9 +358,11 @@ def _format_mermaid_er_diagram(
     # テーブル定義を出力
     for table in sorted(tables_info, key=lambda t: t["table_name"]):
         table_name = table["table_name"]
-        lines.append(f"    {table_name} {{")
+        sanitized_table_name = _sanitize_identifier(table_name)
+        lines.append(f"    {sanitized_table_name} {{")
         for col in table["columns"]:
             simplified_type = _simplify_data_type(col["data_type"])
+            sanitized_column_name = _sanitize_identifier(col["column_name"])
             markers = []
             if col["is_primary_key"]:
                 markers.append("PK")
@@ -332,14 +374,16 @@ def _format_mermaid_er_diagram(
             marker_str = " " + ",".join(markers) if markers else ""
             comment = f' "{col["comment"]}"' if col["comment"] else ""
             lines.append(
-                f"        {simplified_type} {col['column_name']}{marker_str}{comment}"
+                f"        {simplified_type} {sanitized_column_name}{marker_str}{comment}"
             )
         lines.append("    }")
 
     # 関係を出力（実際の外部キー）
     for rel in relations:
         # 多対1の関係を表現: from_table は to_table の1つのレコードを参照
-        lines.append(f'    {rel["to_table"]} ||--o{{ {rel["from_table"]} : "has"')
+        sanitized_to_table = _sanitize_identifier(rel["to_table"])
+        sanitized_from_table = _sanitize_identifier(rel["from_table"])
+        lines.append(f'    {sanitized_to_table} ||--o{{ {sanitized_from_table} : "has"')
 
     # Virtual Foreign Keysを出力（破線スタイルはMermaidでは対応していないのでコメントで区別）
     for vfk in virtual_fks:
@@ -351,8 +395,10 @@ def _format_mermaid_er_diagram(
             for r in relations
         )
         if not is_duplicate:
+            sanitized_to_table = _sanitize_identifier(vfk["to_table"])
+            sanitized_from_table = _sanitize_identifier(vfk["from_table"])
             lines.append(
-                f'    {vfk["to_table"]} ||..o{{ {vfk["from_table"]} : "references"'
+                f'    {sanitized_to_table} ||..o{{ {sanitized_from_table} : "references"'
             )
 
     return "\n".join(lines)
