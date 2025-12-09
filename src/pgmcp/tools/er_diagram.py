@@ -4,6 +4,7 @@ ER図生成ツール
 データベースのテーブル関係をMermaid形式のER図として出力
 """
 
+import re
 from typing import Any
 
 from pgmcp.connection import get_connection
@@ -255,8 +256,6 @@ def _sanitize_identifier(identifier: str) -> str:
     Returns:
         サニタイズされた識別子
     """
-    import re
-
     if not identifier:
         return "unnamed"
 
