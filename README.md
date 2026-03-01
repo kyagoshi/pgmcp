@@ -12,6 +12,7 @@ PostgreSQLデータベースのテーブル情報を取得するMCPサーバー�
 - **get_table_schema**: 指定したテーブルのカラム情報（名前、型、NULL許可、デフォルト値、主キー、コメント）を取得
 - **get_table_indexes**: 指定したテーブルのインデックス情報（名前、カラム、ユニーク、タイプ、定義）を取得
 - **get_foreign_keys**: 指定したテーブルの外部キー情報（制約名、カラム、参照先テーブル、参照先カラム）を取得
+- **get_sample_data**: 指定したテーブルからサンプルデータを取得（開発時やデータ構造の確認に便利）
 - **generate_er_diagram** [BETA]: データベースのテーブル関係をMermaid形式のER図として生成
 
 ### セキュリティ
@@ -185,6 +186,31 @@ pip install "git+https://github.com/kyagoshi/pgmcp@v0.1.0"
 |-----------------|-------------|---------------|----------------|
 | orders_user_id_fkey | user_id | users | id |
 ```
+
+### get_sample_data
+
+指定したテーブルからサンプルデータを取得します。
+
+**パラメータ:**
+
+- `table_name` (string, required): テーブル名
+- `schema` (string, optional): スキーマ名。デフォルトは `"public"`
+- `limit` (integer, optional): 取得する行数。デフォルトは `5`、最大値は `100`
+
+**出力例:**
+
+```text
+| id | name | email |
+|----|------|-------|
+| 1 | Alice | alice@example.com |
+| 2 | Bob | bob@example.com |
+```
+
+**特徴:**
+
+- 開発時やデータ構造の確認に便利
+- セキュリティのため最大100件に制限
+- 読み取り専用トランザクションで実行
 
 ### generate_er_diagram [BETA]
 
