@@ -7,9 +7,62 @@ from unittest.mock import MagicMock, patch
 from pgmcp.tools.er_diagram import (
     _detect_virtual_foreign_keys,
     _format_mermaid_er_diagram,
+    _sanitize_identifier,
     _simplify_data_type,
     generate_er_diagram_impl,
 )
+
+
+class TestSanitizeIdentifier:
+    """_sanitize_identifier のテスト"""
+
+    def test_sanitize_normal_identifier(self) -> None:
+        """通常の識別子はそのまま"""
+        assert _sanitize_identifier("users") == "users"
+        assert _sanitize_identifier("user_id") == "user_id"
+        assert _sanitize_identifier("User123") == "User123"
+
+    def test_sanitize_special_characters(self) -> None:
+        """特殊文字をアンダースコアに置換"""
+        assert _sanitize_identifier("table!@#") == "table"
+        assert _sanitize_identifier("column-with-dashes") == "column_with_dashes"
+        assert _sanitize_identifier("column$name%test") == "column_name_test"
+
+    def test_sanitize_spaces(self) -> None:
+        """スペースをアンダースコアに置換"""
+        assert _sanitize_identifier("Column With Spaces") == "Column_With_Spaces"
+        assert _sanitize_identifier("  multiple  spaces  ") == "multiple_spaces"
+
+    def test_sanitize_japanese_characters(self) -> None:
+        """日本語文字をアンダースコアに置換"""
+        # 全て非ASCII文字の場合は "unnamed" になる
+        assert _sanitize_identifier("日本語カラム") == "unnamed"
+        assert _sanitize_identifier("테스트") == "unnamed"
+
+    def test_sanitize_mixed_characters(self) -> None:
+        """混在した文字の処理"""
+        assert _sanitize_identifier("table_日本語_name") == "table_name"
+        assert _sanitize_identifier("user!@#123") == "user_123"
+
+    def test_sanitize_leading_digit(self) -> None:
+        """先頭が数字の場合、アンダースコアを前置"""
+        assert _sanitize_identifier("123table") == "_123table"
+        assert _sanitize_identifier("1_user") == "_1_user"
+
+    def test_sanitize_empty_string(self) -> None:
+        """空文字列は "unnamed" に"""
+        assert _sanitize_identifier("") == "unnamed"
+
+    def test_sanitize_only_special_characters(self) -> None:
+        """特殊文字のみの場合は "unnamed" に"""
+        assert _sanitize_identifier("!@#$%") == "unnamed"
+        assert _sanitize_identifier("---") == "unnamed"
+        assert _sanitize_identifier("   ") == "unnamed"
+
+    def test_sanitize_consecutive_underscores(self) -> None:
+        """連続するアンダースコアを1つに圧縮"""
+        assert _sanitize_identifier("table___name") == "table_name"
+        assert _sanitize_identifier("col--name") == "col_name"
 
 
 class TestSimplifyDataType:
@@ -403,6 +456,41 @@ class TestFormatMermaidErDiagram:
         result = _format_mermaid_er_diagram([], [], [])
 
         assert result == "対象のテーブルが見つかりませんでした。"
+
+    def test_format_with_special_characters_in_names(self) -> None:
+        """特殊文字を含むテーブル名・カラム名のフォーマット"""
+        tables_info = [
+            {
+                "table_name": "Special-Table_Name!@#",
+                "columns": [
+                    {
+                        "column_name": "Column With Spaces",
+                        "data_type": "integer",
+                        "is_primary_key": True,
+                        "is_foreign_key": False,
+                        "comment": None,
+                    },
+                    {
+                        "column_name": "column-with-dashes",
+                        "data_type": "character varying(100)",
+                        "is_primary_key": False,
+                        "is_foreign_key": False,
+                        "comment": None,
+                    },
+                ],
+            },
+        ]
+
+        result = _format_mermaid_er_diagram(tables_info, [], [])
+
+        # サニタイズされた名前が使用されている
+        assert "Special_Table_Name {" in result
+        assert "integer Column_With_Spaces PK" in result
+        assert "varchar column_with_dashes" in result
+        # 元の特殊文字は含まれない
+        assert "!" not in result
+        assert "@" not in result
+        assert "#" not in result
 
 
 class TestGenerateErDiagramImpl:
