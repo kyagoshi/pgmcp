@@ -9,6 +9,7 @@ from fastmcp import FastMCP
 from pgmcp.tools import (
     generate_er_diagram_impl,
     get_foreign_keys_impl,
+    get_sample_data_impl,
     get_table_indexes_impl,
     get_table_schema_impl,
     list_tables_impl,
@@ -102,6 +103,23 @@ def generate_er_diagram(
         Virtual Foreign Keys（命名規則から推測される外部キー）も含む。
     """
     return generate_er_diagram_impl(schema, tables)
+
+
+@mcp.tool
+def get_sample_data(table_name: str, schema: str = "public", limit: int = 5) -> str:
+    """
+    指定したテーブルからサンプルデータを取得します。
+
+    Args:
+        table_name: テーブル名
+        schema: スキーマ名（デフォルト: "public"）
+        limit: 取得する行数（デフォルト: 5、最大: 100）
+
+    Returns:
+        サンプルデータのMarkdown Table形式の文字列。
+        開発時やデータ構造の確認に便利。セキュリティのため最大100件に制限。
+    """
+    return get_sample_data_impl(table_name, schema, limit)
 
 
 def main() -> None:
