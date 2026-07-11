@@ -97,47 +97,20 @@ uv run pre-commit install
 uv run pre-commit run --all-files
 ```
 
-## セキュリティスキャン (pip-audit)
+## セキュリティスキャン (uv audit)
 
-- `.github/workflows/pip-audit.yml` で Pull Request と週次（月曜 03:00 UTC）に `pip-audit` を実行します。
-- High/Critical もしくは重大度不明の脆弱性を検出した場合にジョブを失敗扱いにします。
-- 重大度が付与されていない脆弱性は安全側に倒し、失敗として扱います。
-
-### 一時的に除外している脆弱性
-
-除外する脆弱性は `.pip-audit-ignore.json` で一元管理しています。
-
-```json
-{
-  "_comment": "除外理由と解除条件を記載",
-  "ignored_vulnerabilities": [
-    "CVE-xxx",
-    "GHSA-xxx"
-  ]
-}
-```
-
-現在除外中:
-
-| CVE ID | パッケージ | 理由 | 解除条件 |
-|--------|-----------|------|----------|
-| CVE-2025-66416 (GHSA-wpm5-9r59-v7v2) | mcp | fastmcp 2.13.3 が mcp<1.23 を要求しているため、脆弱性が修正された mcp>=1.23.0 にアップグレードできない | fastmcp 2.14 がリリースされ mcp>=1.23.0 をサポートしたら除外を解除する |
+- `.github/workflows/uv-audit.yml` で Pull Request と週次（月曜 03:00 UTC）に `uv audit --locked --preview-features audit-command` を実行します。
+- OSV に登録された既知の脆弱性を1件でも検出した場合、ジョブを失敗扱いにします。
+- 依存関係を更新した場合は、必ずロックファイルの整合性と監査結果を確認してください。
 
 ### ローカルでの実行例
 
 ```bash
-uv export --format requirements.txt --locked --no-hashes --quiet > requirements.txt
-uvx --from pip-audit==2.10.0 pip-audit \
-  --progress-spinner=off \
-  --requirement requirements.txt \
-  --vulnerability-service osv \
-  --format json > pip-audit.json
-uv run python scripts/pip_audit_gate.py \
-  --input pip-audit.json \
-  --summary pip-audit-summary.txt \
-  --ignore-file .pip-audit-ignore.json
-cat pip-audit-summary.txt
+uv lock --check
+uv audit --locked --preview-features audit-command
 ```
+
+脆弱性は修正版への更新で解消し、恒久的な除外は追加しないでください。修正版が公開されていない脆弱性をやむを得ず一時除外する場合は、理由と見直し期限を Pull Request に記載したうえで、uv 標準の `--ignore-until-fixed <ID>` を使用します。
 
 ## ローカル開発
 

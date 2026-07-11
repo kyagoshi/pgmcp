@@ -24,7 +24,8 @@ def validate_mermaid_syntax(mermaid_content: str) -> tuple[bool, str]:
         (is_valid, error_message) のタプル
     """
     # mmdcコマンドが利用可能か確認
-    if not shutil.which("mmdc"):
+    mmdc = shutil.which("mmdc")
+    if mmdc is None:
         return True, "mmdc not available, skipping validation"
 
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -39,9 +40,9 @@ def validate_mermaid_syntax(mermaid_content: str) -> tuple[bool, str]:
         puppeteer_config_file.write_text(json.dumps(puppeteer_config), encoding="utf-8")
 
         try:
-            result = subprocess.run(
+            result = subprocess.run(  # noqa: S603 - resolved trusted test tool
                 [
-                    "mmdc",
+                    mmdc,
                     "-i",
                     str(input_file),
                     "-o",

@@ -7,7 +7,7 @@ the developers and maintainers of these projects.
 
 ### fastmcp
 
-- Version: 2.13.3
+- Version: 3.4.4
 - License: Apache Software License
 - Author: Jeremiah Lowin
 - Homepage: https://github.com/jlowin/fastmcp
@@ -30,7 +30,7 @@ limitations under the License.
 
 ### psycopg2-binary
 
-- Version: 2.9.11
+- Version: 2.9.12
 - License: GNU Lesser General Public License (LGPL)
 - Author: Federico Di Gregorio
 - Homepage: https://psycopg.org/
@@ -55,42 +55,52 @@ The following is a summary of licenses for all transitive dependencies:
 
 | Package | License | Author |
 |---------|---------|--------|
+| aiofile | Apache-2.0 | - |
 | annotated-types | MIT | - |
 | anyio | MIT | - |
 | attrs | MIT | - |
 | authlib | BSD | - |
 | beartype | MIT | - |
+| caio | Apache-2.0 | - |
 | cachetools | MIT | Thomas Kemmer |
 | certifi | MPL 2.0 | Kenneth Reitz |
 | cffi | MIT | Armin Rigo, Maciej Fijalkowski |
 | charset-normalizer | MIT | - |
 | click | BSD-3-Clause | - |
+| colorama | BSD-3-Clause | - |
 | coverage | Apache-2.0 | Ned Batchelder |
 | cryptography | Apache-2.0, BSD-3-Clause | - |
 | cyclopts | Apache-2.0 | Brian Pugh |
-| diskcache | Apache-2.0 | Grant Jenks |
 | dnspython | ISC | - |
 | docstring-parser | MIT | - |
-| docutils | BSD, GPL, Public Domain | - |
 | email-validator | Unlicense | Joshua Tauberer |
 | exceptiongroup | MIT | - |
+| fastmcp-slim | Apache-2.0 | Jeremiah Lowin |
+| griffelib | ISC | - |
 | h11 | MIT | Nathaniel J. Smith |
 | httpcore | BSD | - |
 | httpx | BSD | - |
 | httpx-sse | MIT | - |
 | idna | BSD-3-Clause | - |
+| jaraco.classes | MIT | Jason R. Coombs |
+| jaraco.context | MIT | - |
+| jaraco.functools | MIT | - |
+| joserfc | BSD-3-Clause | - |
+| jsonref | MIT | - |
 | jsonschema | MIT | - |
 | jsonschema-path | Apache-2.0 | Artur Maciag |
 | jsonschema-specifications | MIT | - |
+| keyring | MIT | - |
 | markdown-it-py | MIT | - |
 | mcp | MIT | Anthropic, PBC. |
 | mdurl | MIT | - |
+| more-itertools | MIT | - |
 | openapi-pydantic | MIT | Mike Oakley |
+| opentelemetry-api | Apache-2.0 | - |
+| packaging | Apache-2.0, BSD-2-Clause | - |
 | pathable | Apache-2.0 | Artur Maciag |
-| pathvalidate | MIT | Tsuyoshi Hombashi |
 | platformdirs | MIT | - |
 | py-key-value-aio | Apache-2.0 | - |
-| py-key-value-shared | Apache-2.0 | - |
 | pycparser | BSD | Eli Bendersky |
 | pydantic | MIT | - |
 | pydantic-core | MIT | - |
@@ -98,6 +108,8 @@ The following is a summary of licenses for all transitive dependencies:
 | pygments | BSD | - |
 | pyjwt | MIT | - |
 | pyperclip | BSD | - |
+| pywin32 | PSF-2.0 | Mark Hammond et al. |
+| pywin32-ctypes | BSD-3-Clause | Enthought Inc. |
 | pytest-cov | MIT | Marc Schlaich |
 | python-dotenv | BSD-3-Clause | - |
 | python-multipart | Apache-2.0 | - |
@@ -114,6 +126,7 @@ The following is a summary of licenses for all transitive dependencies:
 | typing-inspection | MIT | - |
 | urllib3 | MIT | - |
 | uvicorn | BSD-3-Clause | - |
+| watchfiles | MIT | - |
 | websockets | BSD | - |
 
 ---

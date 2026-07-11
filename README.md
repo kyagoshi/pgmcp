@@ -1,7 +1,7 @@
 # pgmcp
 
 [![Tests](https://github.com/kyagoshi/pgmcp/actions/workflows/test.yml/badge.svg)](https://github.com/kyagoshi/pgmcp/actions/workflows/test.yml)
-[![Security Audit](https://github.com/kyagoshi/pgmcp/actions/workflows/pip-audit.yml/badge.svg)](https://github.com/kyagoshi/pgmcp/actions/workflows/pip-audit.yml)
+[![Security Audit](https://github.com/kyagoshi/pgmcp/actions/workflows/uv-audit.yml/badge.svg)](https://github.com/kyagoshi/pgmcp/actions/workflows/uv-audit.yml)
 
 
 PostgreSQLデータベースのテーブル情報を取得するMCPサーバーです。
