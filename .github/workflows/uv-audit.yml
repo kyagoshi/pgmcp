@@ -1,0 +1,35 @@
+name: Security Audit (uv audit)
+
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+jobs:
+  uv-audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.3.2
+
+      - name: Audit locked dependencies
+        shell: bash
+        run: |
+          set +e
+          uv audit --locked --preview-features audit-command > uv-audit.txt 2>&1
+          status=$?
+          cat uv-audit.txt
+          {
+            echo "## uv audit"
+            echo '```text'
+            cat uv-audit.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
