@@ -97,9 +97,9 @@ uv run pre-commit install
 uv run pre-commit run --all-files
 ```
 
-## セキュリティスキャン (pip-audit / uv audit)
+## セキュリティスキャン (uv audit)
 
-- `.github/workflows/pip-audit.yml` で Pull Request と週次（月曜 03:00 UTC）に実行します。ロック済みのruntimeおよびdev extraをOSVに照合し、High/Criticalまたは重大度不明の脆弱性で失敗します。
+- `.github/workflows/dependency-audit.yml` で Pull Request と週次（月曜 03:00 UTC）に `uv audit` を実行します。ロックファイル内のruntimeとdev extraをOSVに照合し、既知脆弱性またはadverse project statusがあれば失敗します。
 - `.pip-audit-ignore.json` の現在の除外リストは空です。脆弱性は修正版への更新で解消し、一時的な除外は避けてください。
 - FastMCPは `>=3.4.10,<4.0.0` に制限しています。3.4.10で既知のFastMCP脆弱性が修正され、3系はPython 3.11以上に対応します。Python 3.10はサポート終了です。
 
