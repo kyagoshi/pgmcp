@@ -6,7 +6,7 @@
 
 ### 前提条件
 
-- Python 3.10以上
+- Python 3.11以上
 - uv（パッケージ管理）
 - Docker（統合テスト用）
 
@@ -97,46 +97,20 @@ uv run pre-commit install
 uv run pre-commit run --all-files
 ```
 
-## セキュリティスキャン (pip-audit)
+## セキュリティスキャン (pip-audit / uv audit)
 
-- `.github/workflows/pip-audit.yml` で Pull Request と週次（月曜 03:00 UTC）に `pip-audit` を実行します。
-- High/Critical もしくは重大度不明の脆弱性を検出した場合にジョブを失敗扱いにします。
-- 重大度が付与されていない脆弱性は安全側に倒し、失敗として扱います。
-
-### 一時的に除外している脆弱性
-
-除外する脆弱性は `.pip-audit-ignore.json` で一元管理しています。
-
-```json
-{
-  "_comment": "除外理由と解除条件を記載",
-  "ignored_vulnerabilities": [
-    "CVE-xxx",
-    "GHSA-xxx"
-  ]
-}
-```
-
-現在除外中:
-
-| CVE ID | パッケージ | 理由 | 解除条件 |
-|--------|-----------|------|----------|
-| CVE-2025-66416 (GHSA-wpm5-9r59-v7v2) | mcp | fastmcp 2.13.3 が mcp<1.23 を要求しているため、脆弱性が修正された mcp>=1.23.0 にアップグレードできない | fastmcp 2.14 がリリースされ mcp>=1.23.0 をサポートしたら除外を解除する |
+- `.github/workflows/pip-audit.yml` で Pull Request と週次（月曜 03:00 UTC）に実行します。ロック済みのruntimeおよびdev extraをOSVに照合し、High/Criticalまたは重大度不明の脆弱性で失敗します。
+- `.pip-audit-ignore.json` の現在の除外リストは空です。脆弱性は修正版への更新で解消し、一時的な除外は避けてください。
+- FastMCPは `>=3.4.10,<4.0.0` に制限しています。3.4.10で既知のFastMCP脆弱性が修正され、3系はPython 3.11以上に対応します。Python 3.10はサポート終了です。
 
 ### ローカルでの実行例
 
 ```bash
-uv export --format requirements.txt --locked --no-hashes --quiet > requirements.txt
-uvx --from pip-audit==2.10.0 pip-audit \
-  --progress-spinner=off \
-  --requirement requirements.txt \
-  --vulnerability-service osv \
-  --format json > pip-audit.json
-uv run python scripts/pip_audit_gate.py \
-  --input pip-audit.json \
-  --summary pip-audit-summary.txt \
-  --ignore-file .pip-audit-ignore.json
-cat pip-audit-summary.txt
+# uv 0.11.26以上（pyproject.tomlのrequired-versionを参照）
+uv lock --check
+uv audit --locked --preview-features audit-command
+uv export --all-extras --format requirements.txt --locked --no-hashes > requirements.txt
+uvx --from pip-audit==2.10.0 pip-audit --progress-spinner=off --requirement requirements.txt --vulnerability-service osv
 ```
 
 ## ローカル開発
