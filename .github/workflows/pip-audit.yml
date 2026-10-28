@@ -23,7 +23,7 @@ jobs:
         run: uv python install 3.12
 
       - name: Export locked requirements
-        run: uv export --format requirements.txt --locked --no-hashes --quiet > requirements.txt
+        run: uv export --all-extras --format requirements.txt --locked --no-hashes --quiet > requirements.txt
 
       - name: Run pip-audit (JSON)
         # 一時除外する脆弱性は .pip-audit-ignore.json で管理
